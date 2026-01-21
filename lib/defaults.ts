@@ -9,6 +9,7 @@ export const defaultState: AppState = {
   },
   level: "Intermediate",
   uiLanguage: "Portuguese",
+  theme: "light",
   hasOnboarded: false,
   messages: [],
 };
