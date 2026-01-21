@@ -24,6 +24,7 @@ type AppStateContextValue = {
 const AppStateContext = createContext<AppStateContextValue | null>(null);
 
 export function AppStateProvider({ children }: { children: React.ReactNode }) {
+  const [hydrated, setHydrated] = useState(false);
   const [state, setState] = useState<AppState>(() => {
     if (typeof window === "undefined") {
       return defaultState;
@@ -31,6 +32,10 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     const stored = loadState();
     return stored ? { ...defaultState, ...stored } : defaultState;
   });
+
+  useEffect(() => {
+    setHydrated(true);
+  }, []);
 
   useEffect(() => {
     saveState(state);
@@ -83,6 +88,10 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       saveState(state);
     }
   }, [state]);
+
+  if (!hydrated) {
+    return null;
+  }
 
   return (
     <AppStateContext.Provider value={value}>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useAppState } from "@/components/app-state";
+import { InstallButton } from "@/components/install-button";
 import { useLabels } from "@/components/language-label";
 
 const LEVELS = ["Beginner", "Intermediate", "Advanced"] as const;
@@ -43,6 +44,7 @@ export function SettingsPanel() {
       <button type="button" onClick={clearMessages}>
         {labels.clearChat}
       </button>
+      <InstallButton />
     </section>
   );
 }
