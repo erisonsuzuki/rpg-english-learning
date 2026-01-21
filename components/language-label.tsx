@@ -15,6 +15,9 @@ const COPY = {
     chatPurpose:
       "Um RPG interativo para praticar inglês com correções em português.",
     levelLabel: "Nível de Inglês",
+    themeLabel: "Tema",
+    themeLight: "Claro",
+    themeDark: "Escuro",
     languageLabel: "Idioma do App",
     newConversation: "Nova Conversa",
     clearChat: "Limpar Chat",
@@ -66,6 +69,9 @@ const COPY = {
     chatPurpose:
       "An interactive RPG that builds your English through story and coaching.",
     levelLabel: "English Level",
+    themeLabel: "Theme",
+    themeLight: "Light",
+    themeDark: "Dark",
     languageLabel: "App Language",
     newConversation: "New Conversation",
     clearChat: "Clear Chat",

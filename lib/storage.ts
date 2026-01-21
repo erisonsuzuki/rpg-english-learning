@@ -4,6 +4,7 @@ export type AppState = {
   character: CharacterProfile;
   level: string;
   uiLanguage: string;
+  theme: "light" | "dark";
   hasOnboarded: boolean;
   messages: ChatMessage[];
 };

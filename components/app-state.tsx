@@ -38,6 +38,12 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
+    if (typeof document !== "undefined") {
+      document.documentElement.dataset.theme = state.theme;
+    }
+  }, [state.theme]);
+
+  useEffect(() => {
     saveState(state);
   }, [state]);
 

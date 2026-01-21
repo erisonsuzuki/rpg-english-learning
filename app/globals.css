@@ -8,6 +8,16 @@
   --border: #e2d6c6;
 }
 
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #111316;
+  --panel: #171a1f;
+  --text: #e7e2d9;
+  --muted: #9aa3ad;
+  --accent: #7ab4c7;
+  --border: #2a2f38;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -19,6 +29,10 @@ body {
   font-family: "Georgia", "Times New Roman", serif;
   color: var(--text);
   background: radial-gradient(circle at top, #faf6ef, var(--bg));
+}
+
+:root[data-theme="dark"] body {
+  background: radial-gradient(circle at top, #1b1f25, var(--bg));
 }
 
 .rpg-shell {
@@ -69,6 +83,10 @@ body {
   background: #f9f4ec;
 }
 
+:root[data-theme="dark"] .rpg-nav a:hover {
+  background: #1f242c;
+}
+
 .app-body {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -108,6 +126,13 @@ body {
   border: 1px solid var(--border);
   border-radius: 10px;
   background: #fffdf9;
+}
+
+:root[data-theme="dark"] .panel input,
+:root[data-theme="dark"] .panel select,
+:root[data-theme="dark"] .panel textarea {
+  background: #1f242c;
+  color: var(--text);
 }
 
 .panel button {
@@ -187,6 +212,10 @@ body {
   border-radius: 16px;
   padding: 10px 14px;
   font-size: 14px;
+}
+
+:root[data-theme="dark"] .panel .chat-starter {
+  background: #1f242c;
 }
 
 .panel .chat-starter:hover {

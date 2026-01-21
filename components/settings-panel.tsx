@@ -6,6 +6,7 @@ import { useLabels } from "@/components/language-label";
 
 const LEVELS = ["Beginner", "Intermediate", "Advanced"] as const;
 const LANGUAGES = ["Portuguese", "English"] as const;
+const THEMES = ["light", "dark"] as const;
 
 export function SettingsPanel() {
   const { state, updateState, resetConversation, clearMessages } = useAppState();
@@ -35,6 +36,20 @@ export function SettingsPanel() {
         {LANGUAGES.map((lang) => (
           <option key={lang} value={lang}>
             {lang}
+          </option>
+        ))}
+      </select>
+      <label htmlFor="app-theme">{labels.themeLabel}</label>
+      <select
+        id="app-theme"
+        value={state.theme}
+        onChange={(event) =>
+          updateState({ theme: event.target.value as (typeof THEMES)[number] })
+        }
+      >
+        {THEMES.map((theme) => (
+          <option key={theme} value={theme}>
+            {theme === "dark" ? labels.themeDark : labels.themeLight}
           </option>
         ))}
       </select>
