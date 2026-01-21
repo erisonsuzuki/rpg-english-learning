@@ -11,7 +11,9 @@ function formatForSummary(messages: ChatMessage[]) {
     .join("\n");
 }
 
-export async function maybeSummarize(messages: ChatMessage[]) {
+export async function maybeSummarize(
+  messages: ChatMessage[]
+): Promise<ChatMessage[]> {
   if (messages.length <= SUMMARY_THRESHOLD) return messages;
 
   const head = messages.slice(0, Math.max(0, messages.length - KEEP_TAIL));
@@ -21,19 +23,19 @@ export async function maybeSummarize(messages: ChatMessage[]) {
   try {
     const summary = await groqChat([
       {
-        role: "system",
+        role: "system" as const,
         content:
           "Summarize the conversation for continuity in a story-driven English learning RPG. " +
           "Focus on plot facts, character details, user choices, corrections, and key vocabulary. " +
           "Keep it concise and in English.",
       },
-      { role: "user", content: summaryPrompt },
+      { role: "user" as const, content: summaryPrompt },
     ]);
 
     if (!summary) return messages;
 
     return [
-      { role: "system", content: `${SUMMARY_PREFIX}\n${summary}` },
+      { role: "system" as const, content: `${SUMMARY_PREFIX}\n${summary}` },
       ...tail,
     ];
   } catch {

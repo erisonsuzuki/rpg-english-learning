@@ -1,11 +1,16 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { AppStateProvider } from "@/components/app-state";
+import { Header } from "@/components/header";
 import { ServiceWorkerRegister } from "@/components/sw-register";
 
 export const metadata: Metadata = {
   title: "RPG English Learning",
   description: "RPG story-driven English learning chat",
   manifest: "/manifest.json",
+};
+
+export const viewport: Viewport = {
   themeColor: "#204b5e",
 };
 
@@ -18,7 +23,10 @@ export default function RootLayout({
     <html lang="pt-BR">
       <body>
         <ServiceWorkerRegister />
-        {children}
+        <AppStateProvider>
+          <Header />
+          <main className="rpg-shell">{children}</main>
+        </AppStateProvider>
       </body>
     </html>
   );

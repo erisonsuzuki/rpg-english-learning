@@ -22,6 +22,8 @@ function formatCharacterBlock(context: PromptContext) {
 export function buildSystemPrompt(context: PromptContext) {
   const blocks = [
     "## Runtime Context",
+    "Use this context to tailor the story, corrections, and difficulty.",
+    "If English level or RPG theme are missing, ask the user for them.",
     context.level ? `English Level: ${context.level}` : "",
     context.uiLanguage ? `App UI Language: ${context.uiLanguage}` : "",
     formatCharacterBlock(context),
