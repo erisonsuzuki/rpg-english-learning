@@ -1,8 +1,11 @@
 import type { ChatMessage } from "@/lib/types";
+import type { ProviderResult, ProviderUsage } from "@/lib/providers/groq";
 
 const NEMOTRON_URL = "https://integrate.api.nvidia.com/v1/chat/completions";
 
-export async function nemotronChat(messages: ChatMessage[]) {
+export async function nemotronChat(
+  messages: ChatMessage[]
+): Promise<ProviderResult> {
   const apiKey = process.env.NVIDIA_API_KEY;
   if (!apiKey) {
     throw new Error("Missing NVIDIA_API_KEY");
@@ -31,9 +34,20 @@ export async function nemotronChat(messages: ChatMessage[]) {
 
   const data = await response.json();
   const content = data?.choices?.[0]?.message?.content;
+  const usage: ProviderUsage | undefined = data?.usage
+    ? {
+        promptTokens: data.usage.prompt_tokens,
+        completionTokens: data.usage.completion_tokens,
+        totalTokens: data.usage.total_tokens,
+      }
+    : undefined;
   if (!content) {
     throw new Error("Nemotron returned empty content");
   }
 
-  return content.trim();
+  return {
+    content: content.trim(),
+    model: data?.model || model,
+    usage,
+  };
 }

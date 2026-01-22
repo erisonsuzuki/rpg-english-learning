@@ -59,6 +59,8 @@ const COPY = {
     onboardingIntro:
       "Defina seu nível de inglês e idioma preferido antes de começar.",
     onboardingCta: "Começar",
+    storageUsageLabel: "Uso de armazenamento",
+    storageUsageWarning: "Considere limpar o chat para liberar espaço.",
     installLabel: "Instalar App",
     subtitle: "Narrativa RPG para praticar inglês",
   },
@@ -113,6 +115,8 @@ const COPY = {
     onboardingIntro:
       "Set your English level and preferred language before you begin.",
     onboardingCta: "Start",
+    storageUsageLabel: "Storage usage",
+    storageUsageWarning: "Consider clearing chat to free up space.",
     installLabel: "Install App",
     subtitle: "Interactive RPG storytelling to practice English",
   },

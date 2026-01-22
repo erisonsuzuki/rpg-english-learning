@@ -45,12 +45,21 @@ export function ChatPanel() {
         throw new Error(text || labels.chatError);
       }
 
-      const data = (await response.json()) as { output?: string };
+      const data = (await response.json()) as {
+        output?: string;
+        provider?: string;
+        model?: string;
+      };
       if (!data.output) {
         throw new Error(labels.chatError);
       }
 
-      addMessage({ role: "assistant", content: data.output });
+      addMessage({
+        role: "assistant",
+        content: data.output,
+        provider: data.provider,
+        model: data.model,
+      });
       setStatus("idle");
     } catch (err) {
       const message = err instanceof Error ? err.message : labels.chatError;
@@ -92,7 +101,13 @@ export function ChatPanel() {
         ) : (
           state.messages.map((message, index) => (
             <div key={`${message.role}-${index}`} className="chat-message">
-              <strong>{message.role}:</strong>
+              <strong>
+                {message.role}
+                {message.role === "assistant" && message.provider
+                  ? ` (${message.provider})`
+                  : ""}
+                :
+              </strong>
               <ReactMarkdown>{message.content}</ReactMarkdown>
             </div>
           ))
