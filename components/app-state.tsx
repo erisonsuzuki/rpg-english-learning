@@ -6,7 +6,7 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useState,
+  useSyncExternalStore,
 } from "react";
 import type { AppState } from "@/lib/storage";
 import { defaultState } from "@/lib/defaults";
@@ -23,19 +23,37 @@ type AppStateContextValue = {
 
 const AppStateContext = createContext<AppStateContextValue | null>(null);
 
-export function AppStateProvider({ children }: { children: React.ReactNode }) {
-  const [hydrated, setHydrated] = useState(false);
-  const [state, setState] = useState<AppState>(() => {
-    if (typeof window === "undefined") {
-      return defaultState;
-    }
-    const stored = loadState();
-    return stored ? { ...defaultState, ...stored } : defaultState;
-  });
+let storeState: AppState = defaultState;
+let hasLoaded = false;
+const listeners = new Set<() => void>();
 
-  useEffect(() => {
-    setHydrated(true);
-  }, []);
+function getSnapshot() {
+  if (typeof window === "undefined") return defaultState;
+  if (!hasLoaded) {
+    const stored = loadState();
+    storeState = stored ? { ...defaultState, ...stored } : defaultState;
+    hasLoaded = true;
+  }
+  return storeState;
+}
+
+function getServerSnapshot() {
+  return defaultState;
+}
+
+function subscribe(listener: () => void) {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+}
+
+function updateStore(next: AppState) {
+  storeState = next;
+  saveState(next);
+  listeners.forEach((listener) => listener());
+}
+
+export function AppStateProvider({ children }: { children: React.ReactNode }) {
+  const state = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   useEffect(() => {
     if (typeof document !== "undefined") {
@@ -43,38 +61,46 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     }
   }, [state.theme]);
 
-  useEffect(() => {
-    saveState(state);
-  }, [state]);
+  const updateState = useCallback(
+    (next: Partial<AppState>) => {
+      updateStore({ ...state, ...next });
+    },
+    [state]
+  );
 
-  const updateState = useCallback((next: Partial<AppState>) => {
-    setState((prev) => ({ ...prev, ...next }));
-  }, []);
+  const updateCharacter = useCallback(
+    (next: Partial<AppState["character"]>) => {
+      updateStore({
+        ...state,
+        character: { ...state.character, ...next },
+      });
+    },
+    [state]
+  );
 
-  const updateCharacter = useCallback((next: Partial<AppState["character"]>) => {
-    setState((prev) => ({
-      ...prev,
-      character: { ...prev.character, ...next },
-    }));
-  }, []);
-
-  const addMessage = useCallback((message: AppState["messages"][number]) => {
-    setState((prev) => ({
-      ...prev,
-      messages: [...prev.messages, message],
-    }));
-  }, []);
+  const addMessage = useCallback(
+    (message: AppState["messages"][number]) => {
+      updateStore({
+        ...state,
+        messages: [...state.messages, message],
+      });
+    },
+    [state]
+  );
 
   const clearMessages = useCallback(() => {
-    setState((prev) => ({ ...prev, messages: [] }));
-  }, []);
+    updateStore({
+      ...state,
+      messages: [],
+    });
+  }, [state]);
 
   const resetConversation = useCallback(() => {
-    setState((prev) => ({
-      ...prev,
+    updateStore({
+      ...state,
       messages: [],
-    }));
-  }, []);
+    });
+  }, [state]);
 
   const value = useMemo(
     () => ({
@@ -94,10 +120,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       saveState(state);
     }
   }, [state]);
-
-  if (!hydrated) {
-    return null;
-  }
 
   return (
     <AppStateContext.Provider value={value}>
