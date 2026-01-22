@@ -4,10 +4,13 @@ An installable RPG storytelling app that helps Portuguese-speaking users practic
 
 ## Features
 - RPG chat with strict prompt rules from `docs/prompt.md`
-- Character creation (name, class, backstory, stats)
+- Character creation (name, class, backstory, stats) with optional LLM-assisted questionnaire
 - English level selection (Beginner/Intermediate/Advanced)
 - App UI language toggle (Portuguese/English)
-- Local-only persistence of settings and chat history
+- Dark mode toggle with persistent theme preference
+- Local-only persistence of settings and chat history (storage usage indicator + capped history)
+- Chat starters when history is empty
+- Markdown rendering for chat responses
 - PWA installable shell with service worker caching
 - LLM providers: Groq (primary) and NVIDIA Nemotron (fallback)
 
@@ -30,6 +33,10 @@ NVIDIA_API_KEY=your_nvidia_key
 GROQ_MODEL=openai/gpt-oss-20b
 NEMOTRON_MODEL=nvidia/nemotron-3-nano-30b-a3b
 ```
+
+Optional overrides:
+- `GROQ_MODEL`
+- `NEMOTRON_MODEL`
 
 3) Run the dev server:
 ```bash
@@ -57,7 +64,8 @@ npm run dev
 ## LLM Notes
 - Groq is the primary provider with Nemotron as fallback.
 - The system prompt is built from `docs/prompt.md` plus runtime context.
-- Long chats are trimmed and summarized to control token usage.
+- Long chats are summarized and trimmed, with an additional context-size cap to avoid token overflows.
+- Provider/model metadata is logged on the server for debugging.
 
 ## License
 TBD

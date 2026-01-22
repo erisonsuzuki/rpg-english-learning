@@ -6,7 +6,7 @@ import { useAppState } from "@/components/app-state";
 import { useLabels } from "@/components/language-label";
 
 export function ChatPanel() {
-  const { state, addMessage } = useAppState();
+  const { state, addMessage, clearMessages } = useAppState();
   const labels = useLabels();
   const [input, setInput] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
@@ -100,15 +100,20 @@ export function ChatPanel() {
           </div>
         ) : (
           state.messages.map((message, index) => (
-            <div key={`${message.role}-${index}`} className="chat-message">
-              <strong>
-                {message.role}
+            <div
+              key={`${message.role}-${index}`}
+              className={`chat-message chat-message--${message.role}`}
+            >
+              <span className="chat-role">
+                {message.role === "assistant" ? "Master" : "You"}
                 {message.role === "assistant" && message.provider
                   ? ` (${message.provider})`
                   : ""}
                 :
-              </strong>
-              <ReactMarkdown>{message.content}</ReactMarkdown>
+              </span>
+              <div className="chat-bubble">
+                <ReactMarkdown>{message.content}</ReactMarkdown>
+              </div>
             </div>
           ))
         )}
@@ -128,6 +133,9 @@ export function ChatPanel() {
         disabled={!input.trim() || status === "loading"}
       >
         {status === "loading" ? labels.chatLoading : labels.chatSend}
+      </button>
+      <button type="button" className="chat-clear" onClick={clearMessages}>
+        {labels.clearChat}
       </button>
       {status === "error" && error ? <p className="status error">{error}</p> : null}
     </section>

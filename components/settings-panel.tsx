@@ -11,7 +11,7 @@ const LANGUAGES = ["Portuguese", "English"] as const;
 const THEMES = ["light", "dark"] as const;
 
 export function SettingsPanel() {
-  const { state, updateState, resetConversation, clearMessages } = useAppState();
+  const { state, updateState, resetConversation } = useAppState();
   const labels = useLabels();
   const storageSize = useMemo(() => getStateSize(state), [state]);
   const storageSizeLabel = useMemo(() => {
@@ -33,7 +33,11 @@ export function SettingsPanel() {
       >
         {LEVELS.map((level) => (
           <option key={level} value={level}>
-            {level}
+            {level === "Beginner"
+              ? labels.levelBeginner
+              : level === "Intermediate"
+                ? labels.levelIntermediate
+                : labels.levelAdvanced}
           </option>
         ))}
       </select>
@@ -45,7 +49,9 @@ export function SettingsPanel() {
       >
         {LANGUAGES.map((lang) => (
           <option key={lang} value={lang}>
-            {lang}
+            {lang === "English"
+              ? labels.languageOptionEnglish
+              : labels.languageOptionPortuguese}
           </option>
         ))}
       </select>
@@ -64,10 +70,7 @@ export function SettingsPanel() {
         ))}
       </select>
       <button type="button" onClick={resetConversation}>
-        {labels.newConversation}
-      </button>
-      <button type="button" onClick={clearMessages}>
-        {labels.clearChat}
+        {labels.clearData}
       </button>
       <p className="helper-text">
         {labels.storageUsageLabel}: {storageSizeLabel}
