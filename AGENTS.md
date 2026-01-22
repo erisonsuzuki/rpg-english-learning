@@ -1,40 +1,114 @@
 # Repository Guidelines
 
-## Project Structure & Module Organization
-- `app/`: Next.js App Router pages, layouts, and global styles.
-- `components/`: UI components and client state provider.
-- `lib/`: LLM prompt builder, providers, storage, and context utilities.
-- `public/`: PWA assets (manifest, icons) and service worker.
-- `docs/`: product docs and the core prompt (`docs/prompt.md`).
+This file is intended for agentic coding assistants working in this repo.
+It summarizes structure, commands, and code style expectations.
 
-## Build, Test, and Development Commands
-- `npm run dev`: start the local dev server with hot reload.
-- `npm run build`: create a production build.
-- `npm run start`: run the production build locally.
+## Project Structure & Module Organization
+- `app/`: Next.js App Router pages, layouts, API routes, and global styles.
+- `components/`: UI components and client state provider.
+- `lib/`: Prompt builder, LLM providers, storage, and context utilities.
+- `public/`: PWA assets (manifest, icons) and service worker.
+- `docs/`: Product docs and the core prompt (`docs/prompt.md`).
+
+## Tooling and Commands
+### Local Development
+- `npm run dev`: run Next.js dev server (Turbopack).
+- `npm run build`: production build.
+- `npm run start`: serve the production build.
 - `npm run lint`: run ESLint across the project.
 
-## Coding Style & Naming Conventions
-- Indentation: 2 spaces in JSON, 2 spaces in CSS, and 2 spaces in TS/TSX.
-- Files and folders: kebab-case (e.g., `chat-panel.tsx`).
-- Components: PascalCase exports (e.g., `ChatPanel`).
-- Linting: ESLint with Next.js flat config (`eslint.config.mjs`).
+### Testing
+- No test framework is configured yet.
+- When tests are added, document them here.
+- Prefer colocated tests in `__tests__/` or `*.test.ts(x)` files.
 
-## Testing Guidelines
-There is no test framework configured yet. When tests are added:
-- Prefer colocated tests in a `__tests__/` folder or `*.test.ts(x)` naming.
-- Document the test command in this file.
+### Single-test Guidance (future)
+- If a test runner is introduced:
+  - Prefer `npm test -- <path>` or runner-native commands (e.g., `vitest <path>`).
+  - Document the exact command used for a single test.
 
-## Commit & Pull Request Guidelines
-- Commit style follows Conventional Commits. Example from history:
-  - `feat: scaffold RPG English Learning PWA`
-- Use clear, scoped messages: `feat: add chat api route`, `fix: handle empty message`.
+## Configuration and Environment
+- Runtime expects `.env.local` for secrets.
+- Required keys:
+  - `GROQ_API_KEY`
+  - `NVIDIA_API_KEY`
+- Optional model overrides:
+  - `GROQ_MODEL`
+  - `NEMOTRON_MODEL`
+
+## Prompt and LLM Rules
+- All model behavior must follow `docs/prompt.md`.
+- Keep dynamic runtime context in `lib/prompt.ts` only.
+- If you change prompt behavior, update `docs/prompt.md` first.
+- If prompt changes alter output format, update UI expectations in chat rendering.
+
+## Code Style and Conventions
+### Formatting
+- TypeScript/TSX: 2-space indentation.
+- CSS: 2-space indentation.
+- JSON: 2-space indentation.
+- Prefer explicit line breaks when JSX props grow beyond 1 line.
+
+### Naming
+- Files/folders: kebab-case (e.g., `chat-panel.tsx`).
+- Components: PascalCase (e.g., `ChatPanel`).
+- Hooks: `useX` prefix.
+- Constants: `UPPER_SNAKE_CASE` only for true constants.
+
+### Imports
+- Use absolute imports from `@/` for app code.
+- Group imports: external libs → internal modules → types.
+- Avoid unused imports; keep lint clean.
+
+### Types
+- Prefer explicit types for API payloads and provider responses.
+- Use `type` aliases for payload shapes; interfaces are fine when extending.
+- Keep shared types in `lib/types.ts`.
+
+### Error Handling
+- API routes should return structured errors with HTTP status codes.
+- Provider errors should include response status/body when available.
+- Use `try/catch` around LLM calls; return 5xx with readable error text.
+
+### State Management
+- App state is stored via `useSyncExternalStore` in `components/app-state.tsx`.
+- Use provided helpers (`updateState`, `updateCharacter`, `addMessage`) to mutate state.
+- Avoid mutating `state` directly in components.
+
+### Styling
+- Use CSS variables in `app/globals.css`.
+- Theme switching uses `data-theme` on `<html>`.
+- Keep new styles consistent with existing palette and spacing scale.
+- Prefer class-based styling over inline styles.
+
+## API and Providers
+- Chat endpoint: `app/api/chat/route.ts`.
+- Character endpoint: `app/api/character/route.ts`.
+- Providers live in `lib/providers/` and must return `ProviderResult`.
+- `runWithFallback` returns `{ result, provider }` and logs provider failures.
+
+## Chat UX Expectations
+- Chat messages support markdown rendering.
+- Provider name appears in the role label (e.g., "Master (Groq)").
+- When chat history is empty, show starter suggestions.
+
+## Storage and Persistence
+- Local storage persists `AppState` via `lib/storage.ts`.
+- `saveState` caps stored messages; keep caps updated if message volume grows.
+- Settings screen displays storage usage.
+
+## Linting & Quality Checks
+- ESLint is mandatory; keep `npm run lint` green.
+- Avoid disabling lint rules unless strictly necessary.
+- Keep console logs limited to server-side diagnostics (API routes).
+
+## Commits & PRs
+- Commit style: Conventional Commits (e.g., `feat: add chat api route`).
 - PRs should include:
-  - A short description of changes.
-  - Screenshots for UI changes.
-  - Links to related issues or tasks when applicable.
+  - Short summary of changes.
+  - Screenshots for UI updates.
+  - Links to issues/tasks if available.
 
-## Security & Configuration Tips
-- Do not commit secrets. Use `.env.local` for:
-  - `GROQ_API_KEY`, `NVIDIA_API_KEY`
-  - Optional: `GROQ_MODEL`, `NEMOTRON_MODEL`
-- The LLM behavior must follow `docs/prompt.md`. Keep dynamic context in the system prompt builder (`lib/prompt.ts`).
+## Missing Files
+- No `.cursor/rules`, `.cursorrules`, or `.github/copilot-instructions.md` found.
+- If added later, update this document accordingly.

@@ -46,7 +46,9 @@ Depending on the answer:
    * Explain their meaning in Portuguese.
    * Provide **example sentences in English with Portuguese translations**.
    * Integrate the term into the current or next story scene.
-3. When inserting learned terms into the story, show their **Portuguese translation in parentheses** upon their first appearance per scene.
+3. When inserting learned terms into the story, you **must** show their **Portuguese translation in parentheses** the **first time they appear in a scene**.
+   - This applies to corrected English terms and Portuguese words translated into English.
+   - Example: "You study the runes (runas) carefully."
 4. Create new scenes if needed to integrate vocabulary naturally.
 
 ---

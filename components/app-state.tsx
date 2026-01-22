@@ -52,6 +52,10 @@ function updateStore(next: AppState) {
   listeners.forEach((listener) => listener());
 }
 
+function updateStoreWith(updater: (prev: AppState) => AppState) {
+  updateStore(updater(storeState));
+}
+
 export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const state = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
@@ -61,46 +65,41 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     }
   }, [state.theme]);
 
-  const updateState = useCallback(
-    (next: Partial<AppState>) => {
-      updateStore({ ...state, ...next });
-    },
-    [state]
-  );
+  const updateState = useCallback((next: Partial<AppState>) => {
+    updateStoreWith((prev) => ({ ...prev, ...next }));
+  }, []);
 
   const updateCharacter = useCallback(
     (next: Partial<AppState["character"]>) => {
-      updateStore({
-        ...state,
-        character: { ...state.character, ...next },
-      });
+      updateStoreWith((prev) => ({
+        ...prev,
+        character: { ...prev.character, ...next },
+      }));
     },
-    [state]
+    []
   );
 
   const addMessage = useCallback(
     (message: AppState["messages"][number]) => {
-      updateStore({
-        ...state,
-        messages: [...state.messages, message],
-      });
+      updateStoreWith((prev) => ({
+        ...prev,
+        messages: [...prev.messages, message],
+      }));
     },
-    [state]
+    []
   );
 
   const clearMessages = useCallback(() => {
-    updateStore({
-      ...state,
+    updateStoreWith((prev) => ({
+      ...prev,
       messages: [],
-    });
-  }, [state]);
+    }));
+  }, []);
 
   const resetConversation = useCallback(() => {
-    updateStore({
-      ...state,
-      messages: [],
-    });
-  }, [state]);
+    clearState();
+    updateStore(defaultState);
+  }, []);
 
   const value = useMemo(
     () => ({

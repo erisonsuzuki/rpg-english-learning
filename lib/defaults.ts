@@ -8,8 +8,8 @@ export const defaultState: AppState = {
     stats: "",
   },
   level: "Intermediate",
-  uiLanguage: "Portuguese",
-  theme: "light",
+  uiLanguage: "English",
+  theme: "dark",
   hasOnboarded: false,
   messages: [],
 };
