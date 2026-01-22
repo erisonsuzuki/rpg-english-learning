@@ -1,8 +1,20 @@
 import type { ChatMessage } from "@/lib/types";
 
+export type ProviderUsage = {
+  promptTokens?: number;
+  completionTokens?: number;
+  totalTokens?: number;
+};
+
+export type ProviderResult = {
+  content: string;
+  model: string;
+  usage?: ProviderUsage;
+};
+
 const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
 
-export async function groqChat(messages: ChatMessage[]) {
+export async function groqChat(messages: ChatMessage[]): Promise<ProviderResult> {
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) {
     throw new Error("Missing GROQ_API_KEY");
@@ -29,9 +41,20 @@ export async function groqChat(messages: ChatMessage[]) {
 
   const data = await response.json();
   const content = data?.choices?.[0]?.message?.content;
+  const usage: ProviderUsage | undefined = data?.usage
+    ? {
+        promptTokens: data.usage.prompt_tokens,
+        completionTokens: data.usage.completion_tokens,
+        totalTokens: data.usage.total_tokens,
+      }
+    : undefined;
   if (!content) {
     throw new Error("Groq returned empty content");
   }
 
-  return content.trim();
+  return {
+    content: content.trim(),
+    model: data?.model || model,
+    usage,
+  };
 }

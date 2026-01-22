@@ -9,6 +9,8 @@ export type AppState = {
   messages: ChatMessage[];
 };
 
+const MAX_STORED_MESSAGES = 120;
+
 const KEY = "rpg-english-state-v1";
 
 export function loadState(): AppState | null {
@@ -19,10 +21,18 @@ export function loadState(): AppState | null {
 
 export function saveState(state: AppState) {
   if (typeof window === "undefined") return;
-  window.localStorage.setItem(KEY, JSON.stringify(state));
+  const normalized: AppState = {
+    ...state,
+    messages: state.messages.slice(-MAX_STORED_MESSAGES),
+  };
+  window.localStorage.setItem(KEY, JSON.stringify(normalized));
 }
 
 export function clearState() {
   if (typeof window === "undefined") return;
   window.localStorage.removeItem(KEY);
+}
+
+export function getStateSize(state: AppState) {
+  return JSON.stringify(state).length;
 }

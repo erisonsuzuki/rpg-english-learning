@@ -47,12 +47,12 @@ export async function POST(req: Request) {
       { role: "user" as const, content: prompt },
     ];
 
-    const output = await runWithFallback((provider) => {
+    const { result } = await runWithFallback((provider) => {
       const run = provider === "nemotron" ? nemotronChat : groqChat;
       return run(messages);
     }, preferredProvider);
 
-    const draftCharacter = parseCharacterProfile(output);
+    const draftCharacter = parseCharacterProfile(result.content);
     return NextResponse.json({ draftCharacter });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";

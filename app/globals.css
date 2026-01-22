@@ -229,6 +229,7 @@ body {
   flex-direction: column;
   gap: 6px;
   color: var(--text);
+  position: relative;
 }
 
 .chat-message + .chat-message {
