@@ -10,9 +10,9 @@ export function Header() {
     <header className="rpg-topbar">
       <LanguageLabel title="RPG English Learning" subtitle={labels.subtitle} />
       <nav className="rpg-nav">
-        <Link href="/">Story</Link>
-        <Link href="/character">Character</Link>
-        <Link href="/settings">Settings</Link>
+        <Link href="/">{labels.headerStory}</Link>
+        <Link href="/character">{labels.headerCharacter}</Link>
+        <Link href="/settings">{labels.headerSettings}</Link>
       </nav>
     </header>
   );

@@ -122,7 +122,11 @@ export function ChatPanel() {
       <textarea
         id="chat-input"
         className="chat-input"
-        placeholder={labels.chatPlaceholder}
+        placeholder={
+          state.messages.length === 0
+            ? labels.chatPlaceholderEmpty
+            : labels.chatPlaceholder
+        }
         value={input}
         onChange={(event) => setInput(event.target.value)}
         rows={4}
