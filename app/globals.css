@@ -57,6 +57,49 @@ body {
   gap: 20px;
 }
 
+.update-banner {
+  margin: 0 24px;
+  padding: 12px 18px;
+  background: #e7f1f6;
+  border: 1px solid #b6d3df;
+  color: #1a3d4f;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  font-weight: 600;
+  position: sticky;
+  top: 12px;
+  z-index: 20;
+  box-shadow: 0 10px 24px rgba(16, 32, 44, 0.12);
+}
+
+.update-banner__action {
+  border: none;
+  background: transparent;
+  color: #1a3d4f;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 4px 6px;
+}
+
+.update-banner__action:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+:root[data-theme="dark"] .update-banner {
+  background: #1c2a33;
+  border-color: #2e4b59;
+  color: #d8edf5;
+}
+
+:root[data-theme="dark"] .update-banner__action {
+  color: #d8edf5;
+}
+
 .rpg-topbar h1 {
   margin: 0 0 6px;
   font-size: 28px;
@@ -395,6 +438,13 @@ body {
 
   .rpg-topbar {
     padding: 16px;
+  }
+
+  .update-banner {
+    margin: 0 16px;
+    flex-direction: column;
+    align-items: flex-start;
+    top: 8px;
   }
 
   .panel {

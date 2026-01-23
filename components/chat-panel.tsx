@@ -65,6 +65,8 @@ export function ChatPanel() {
       const message = err instanceof Error ? err.message : labels.chatError;
       setStatus("error");
       setError(message);
+    } finally {
+      window.dispatchEvent(new Event("app:check-version"));
     }
   };
 

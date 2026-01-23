@@ -3,6 +3,7 @@ import "./globals.css";
 import { AppStateProvider } from "@/components/app-state";
 import { Header } from "@/components/header";
 import { ServiceWorkerRegister } from "@/components/sw-register";
+import { UpdateBanner } from "@/components/update-banner";
 
 export const metadata: Metadata = {
   title: "RPG English Learning",
@@ -25,6 +26,7 @@ export default function RootLayout({
         <ServiceWorkerRegister />
         <AppStateProvider>
           <Header />
+          <UpdateBanner />
           <main className="rpg-shell">{children}</main>
         </AppStateProvider>
       </body>
