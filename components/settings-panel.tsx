@@ -9,6 +9,7 @@ import { getStateSize } from "@/lib/storage";
 const LEVELS = ["Beginner", "Intermediate", "Advanced"] as const;
 const LANGUAGES = ["Portuguese", "English"] as const;
 const THEMES = ["light", "dark"] as const;
+const TEXT_SIZES = ["small", "medium", "large"] as const;
 
 export function SettingsPanel() {
   const { state, updateState, resetConversation } = useAppState();
@@ -66,6 +67,26 @@ export function SettingsPanel() {
         {THEMES.map((theme) => (
           <option key={theme} value={theme}>
             {theme === "dark" ? labels.themeDark : labels.themeLight}
+          </option>
+        ))}
+      </select>
+      <label htmlFor="text-size">{labels.textSizeLabel}</label>
+      <select
+        id="text-size"
+        value={state.textSize}
+        onChange={(event) =>
+          updateState({
+            textSize: event.target.value as (typeof TEXT_SIZES)[number],
+          })
+        }
+      >
+        {TEXT_SIZES.map((size) => (
+          <option key={size} value={size}>
+            {size === "small"
+              ? labels.textSizeSmall
+              : size === "large"
+                ? labels.textSizeLarge
+                : labels.textSizeMedium}
           </option>
         ))}
       </select>

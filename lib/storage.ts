@@ -5,6 +5,7 @@ export type AppState = {
   level: string;
   uiLanguage: string;
   theme: "light" | "dark";
+  textSize: "small" | "medium" | "large";
   hasOnboarded: boolean;
   messages: ChatMessage[];
 };

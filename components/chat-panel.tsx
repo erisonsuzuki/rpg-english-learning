@@ -77,7 +77,7 @@ export function ChatPanel() {
   };
 
   return (
-    <section className="panel">
+    <section className={`panel chat-panel text-size-${state.textSize}`}>
       <h2>{labels.chatTitle}</h2>
       <p className="helper-text">{labels.chatPurpose}</p>
       <div className="chat-window">

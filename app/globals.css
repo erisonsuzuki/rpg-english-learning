@@ -6,6 +6,9 @@
   --muted: #6b7280;
   --accent: #204b5e;
   --border: #e2d6c6;
+  --chat-font-size: 16px;
+  --chat-line-height: 1.6;
+  --chat-block-gap: 12px;
 }
 
 :root[data-theme="dark"] {
@@ -187,6 +190,8 @@ body {
   padding: 16px 18px;
   color: var(--muted);
   overflow-y: auto;
+  font-size: var(--chat-font-size);
+  line-height: var(--chat-line-height);
 }
 
 .chat-empty {
@@ -227,13 +232,13 @@ body {
 .chat-message {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
   color: var(--text);
   position: relative;
 }
 
 .chat-message + .chat-message {
-  margin-top: 22px;
+  margin-top: 26px;
 }
 
 .chat-message--user {
@@ -255,9 +260,11 @@ body {
   background: #f9f4ec;
   border: 1px solid var(--border);
   border-radius: 14px;
-  padding: 14px 16px;
+  padding: 16px 18px;
   max-width: 86%;
   box-shadow: 0 12px 24px rgba(15, 23, 32, 0.08);
+  font-size: var(--chat-font-size);
+  line-height: var(--chat-line-height);
 }
 
 .chat-message--user .chat-bubble {
@@ -279,14 +286,22 @@ body {
   margin-left: 6px;
 }
 
-.chat-message p {
-  margin: 0;
+.chat-bubble > * {
+  margin: 0 0 var(--chat-block-gap);
   color: inherit;
+}
+
+.chat-bubble > :last-child {
+  margin-bottom: 0;
 }
 
 .chat-message ul,
 .chat-message ol {
-  margin: 0 0 0 20px;
+  margin-left: 20px;
+}
+
+.chat-message li + li {
+  margin-top: 6px;
 }
 
 .chat-message code {
@@ -325,6 +340,26 @@ body {
 .chat-input {
   min-height: 120px;
   resize: vertical;
+  font-size: var(--chat-font-size);
+  line-height: var(--chat-line-height);
+}
+
+.text-size-small {
+  --chat-font-size: 14px;
+  --chat-line-height: 1.55;
+  --chat-block-gap: 10px;
+}
+
+.text-size-medium {
+  --chat-font-size: 16px;
+  --chat-line-height: 1.6;
+  --chat-block-gap: 12px;
+}
+
+.text-size-large {
+  --chat-font-size: 18px;
+  --chat-line-height: 1.65;
+  --chat-block-gap: 14px;
 }
 
 .chat-clear {
@@ -349,5 +384,36 @@ body {
   .rpg-topbar {
     flex-direction: column;
     align-items: flex-start;
+  }
+}
+
+@media (max-width: 640px) {
+  .rpg-shell {
+    padding: 16px;
+    gap: 16px;
+  }
+
+  .rpg-topbar {
+    padding: 16px;
+  }
+
+  .panel {
+    padding: 12px;
+  }
+
+  .chat-window {
+    padding: 12px;
+  }
+
+  .chat-bubble {
+    max-width: 100%;
+  }
+
+  .chat-message--assistant {
+    margin-left: 0;
+  }
+
+  .chat-message + .chat-message {
+    margin-top: 18px;
   }
 }
