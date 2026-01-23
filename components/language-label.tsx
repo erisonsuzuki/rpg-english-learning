@@ -76,6 +76,9 @@ const COPY = {
     storageUsageLabel: "Uso de armazenamento",
     storageUsageWarning: "Considere limpar o chat para liberar espaço.",
     installLabel: "Instalar App",
+    updateAvailable: "Nova versão disponível.",
+    updateAction: "Atualizar agora",
+    updateRefreshing: "Atualizando...",
     subtitle: "Narrativa RPG para praticar inglês",
   },
   English: {
@@ -146,6 +149,9 @@ const COPY = {
     storageUsageLabel: "Storage usage",
     storageUsageWarning: "Consider clearing chat to free up space.",
     installLabel: "Install App",
+    updateAvailable: "A new version is available.",
+    updateAction: "Update now",
+    updateRefreshing: "Updating...",
     subtitle: "Interactive RPG storytelling to practice English",
   },
 };

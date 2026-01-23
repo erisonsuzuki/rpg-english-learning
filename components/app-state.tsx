@@ -6,6 +6,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useSyncExternalStore,
 } from "react";
 import type { AppState } from "@/lib/storage";
@@ -29,11 +30,6 @@ const listeners = new Set<() => void>();
 
 function getSnapshot() {
   if (typeof window === "undefined") return defaultState;
-  if (!hasLoaded) {
-    const stored = loadState();
-    storeState = stored ? { ...defaultState, ...stored } : defaultState;
-    hasLoaded = true;
-  }
   return storeState;
 }
 
@@ -58,6 +54,17 @@ function updateStoreWith(updater: (prev: AppState) => AppState) {
 
 export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const state = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const hasHydrated = useRef(false);
+
+  useEffect(() => {
+    if (!hasLoaded) {
+      const stored = loadState();
+      storeState = stored ? { ...defaultState, ...stored } : defaultState;
+      hasLoaded = true;
+      listeners.forEach((listener) => listener());
+    }
+    hasHydrated.current = true;
+  }, []);
 
   useEffect(() => {
     if (typeof document !== "undefined") {
@@ -114,6 +121,8 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   );
 
   useEffect(() => {
+    // Avoid clearing persisted state before initial hydration completes.
+    if (!hasHydrated.current) return;
     if (state.messages.length === 0) {
       clearState();
       saveState(state);
