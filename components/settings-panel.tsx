@@ -1,10 +1,10 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useAppState } from "@/components/app-state";
 import { InstallButton } from "@/components/install-button";
 import { useLabels } from "@/components/language-label";
-import { getStateSize } from "@/lib/storage";
+import { getSupabaseBrowserClient } from "@/utils/supabase/client";
 
 const LEVELS = ["Beginner", "Intermediate", "Advanced"] as const;
 const LANGUAGES = ["Portuguese", "English"] as const;
@@ -14,14 +14,37 @@ const TEXT_SIZES = ["small", "medium", "large"] as const;
 export function SettingsPanel() {
   const { state, updateState, resetConversation } = useAppState();
   const labels = useLabels();
-  const storageSize = useMemo(() => getStateSize(state), [state]);
-  const storageSizeLabel = useMemo(() => {
-    if (storageSize > 1024 * 1024) {
-      return `${(storageSize / (1024 * 1024)).toFixed(2)} MB`;
+  const supabase = useMemo(() => getSupabaseBrowserClient(), []);
+  const [email, setEmail] = useState("");
+  const [authStatus, setAuthStatus] = useState<
+    "idle" | "loading" | "sent" | "error"
+  >("idle");
+  const [authError, setAuthError] = useState<string | null>(null);
+
+  const isAuthenticated = Boolean(state.user);
+
+  const sendMagicLink = async () => {
+    const trimmed = email.trim();
+    if (!trimmed || authStatus === "loading") return;
+    setAuthStatus("loading");
+    setAuthError(null);
+    const { error } = await supabase.auth.signInWithOtp({
+      email: trimmed,
+      options: {
+        emailRedirectTo: window.location.origin,
+      },
+    });
+    if (error) {
+      setAuthStatus("error");
+      setAuthError(error.message);
+      return;
     }
-    return `${Math.ceil(storageSize / 1024)} KB`;
-  }, [storageSize]);
-  const isStorageHeavy = storageSize > 500 * 1024;
+    setAuthStatus("sent");
+  };
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+  };
 
   return (
     <section className="panel">
@@ -93,11 +116,47 @@ export function SettingsPanel() {
       <button type="button" onClick={resetConversation}>
         {labels.clearData}
       </button>
-      <p className="helper-text">
-        {labels.storageUsageLabel}: {storageSizeLabel}
-      </p>
-      {isStorageHeavy ? (
-        <p className="helper-text">{labels.storageUsageWarning}</p>
+      <h3>{labels.authTitle}</h3>
+      {!isAuthenticated ? (
+        <p className="helper-text">{labels.authIntro}</p>
+      ) : null}
+      {isAuthenticated ? (
+        <p className="helper-text">
+          {labels.authSignedInAs} {state.user?.email || labels.authUnknownUser}
+        </p>
+      ) : (
+        <>
+          <label htmlFor="auth-email">{labels.authEmailLabel}</label>
+          <input
+            id="auth-email"
+            type="email"
+            placeholder={labels.authEmailPlaceholder}
+            value={email}
+            onChange={(event) => {
+              setEmail(event.target.value);
+              if (authStatus !== "idle") setAuthStatus("idle");
+              if (authError) setAuthError(null);
+            }}
+          />
+          <button
+            type="button"
+            onClick={sendMagicLink}
+            disabled={authStatus === "loading" || !email.trim()}
+          >
+            {authStatus === "loading" ? labels.authSending : labels.authSendLink}
+          </button>
+          {authStatus === "sent" ? (
+            <p className="helper-text">{labels.authCheckEmail}</p>
+          ) : null}
+          {authStatus === "error" && authError ? (
+            <p className="form-error">{authError}</p>
+          ) : null}
+        </>
+      )}
+      {isAuthenticated ? (
+        <button type="button" onClick={handleSignOut}>
+          {labels.authSignOut}
+        </button>
       ) : null}
       <InstallButton />
     </section>

@@ -16,6 +16,7 @@ const emptyAnswers = QUESTION_IDS.reduce((acc, questionId) => {
 export function CharacterBuilder() {
   const { state, updateCharacter } = useAppState();
   const labels = useLabels();
+  const isAuthenticated = Boolean(state.user);
   const [answers, setAnswers] = useState<Answers>(emptyAnswers);
   const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
@@ -45,7 +46,7 @@ export function CharacterBuilder() {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!hasAnswers || status === "loading") return;
+    if (!hasAnswers || status === "loading" || !isAuthenticated) return;
 
     setStatus("loading");
     setError(null);
@@ -98,9 +99,13 @@ export function CharacterBuilder() {
     <section className="panel">
       <h2>{labels.characterHelpTitle}</h2>
       <p className="helper-text">{labels.characterHelpIntro}</p>
+      {!isAuthenticated ? (
+        <p className="helper-text">{labels.authRequired}</p>
+      ) : null}
       <button
         type="button"
         onClick={() => setShowQuestionnaire((prev) => !prev)}
+        disabled={!isAuthenticated}
       >
         {showQuestionnaire ? labels.characterHelpHide : labels.characterHelpAction}
       </button>
@@ -119,7 +124,10 @@ export function CharacterBuilder() {
               ) : null}
             </div>
           ))}
-          <button type="submit" disabled={!hasAnswers || status === "loading"}>
+          <button
+            type="submit"
+            disabled={!hasAnswers || status === "loading" || !isAuthenticated}
+          >
             {status === "loading"
               ? labels.characterBuilderLoading
               : labels.characterBuilderAction}

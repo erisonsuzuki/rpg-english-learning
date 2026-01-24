@@ -1,6 +1,8 @@
 export type ChatRole = "system" | "user" | "assistant";
 
 export type ChatMessage = {
+  id?: string;
+  tempId?: string;
   role: ChatRole;
   content: string;
   provider?: string;

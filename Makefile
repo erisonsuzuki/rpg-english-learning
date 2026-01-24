@@ -1,4 +1,4 @@
-.PHONY: start stop lint test
+.PHONY: start stop lint test supabase-migrate
 
 start:
 	npm run dev
@@ -11,3 +11,6 @@ lint:
 
 test:
 	npm run test
+
+supabase-migrate:
+	npx supabase db push

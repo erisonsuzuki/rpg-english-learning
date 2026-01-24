@@ -1,7 +1,10 @@
 # PRD Core: RPG English Learning PWA
 
+## LLM Context Files Reference
+- `AGENTS.md`: repository structure, commands, code style, and operational rules.
+
 ## Product Summary
-An installable PWA that delivers an RPG story-driven English learning experience. Users create a character, choose an English level, and chat with an LLM that follows a strict prompt: story in English and teaching/corrections in Portuguese.
+An installable PWA that delivers an RPG story-driven English learning experience. Users authenticate with a magic link, create a character, choose an English level, and chat with an LLM that follows a strict prompt: story in English and teaching/corrections in Portuguese.
 
 ## Goals
 - Provide a fluid, immersive RPG narrative that teaches English.
@@ -29,16 +32,19 @@ An installable PWA that delivers an RPG story-driven English learning experience
 - Character profile creation and updates.
 - English level selection (3 levels).
 - App UI language toggle (Portuguese/English) without altering chat rules.
-- Local persistence of character, settings, and chat history.
+- Supabase-backed persistence of character and chat history per user.
 - PWA installability (manifest + service worker cache).
 - LLM provider selection: Groq primary, NVIDIA Nemotron fallback.
 - Context window trimming and lightweight summarization for long chats.
+- Magic-link authentication via email.
 
 ## Functional Requirements
 - Build system prompt using `docs/prompt.md` plus runtime context (character, level, UI language).
 - Send chat history with trimming and summary injection when needed.
 - Provide "New Conversation" and "Clear Chat" actions.
-- Store state locally with fast resume.
+- Store character and chat messages in Supabase, keyed by authenticated user.
+- Authenticate users via magic-link email and persist session cookies.
+- Enforce row-level security policies per user.
 - Service worker caches the app shell.
 
 ## UX Requirements
@@ -53,10 +59,10 @@ An installable PWA that delivers an RPG story-driven English learning experience
 - Non-streaming response is acceptable; streaming is optional later.
 - Summaries must preserve story facts, corrections, and vocabulary.
 
-## Data Model (Local)
-- Character: name, class, backstory, stats
-- Settings: English level, UI language
-- Chat: ordered message list (role + content)
+## Data Model (Supabase)
+- Characters: user_id, name, class, backstory, stats, timestamps
+- ChatMessages: user_id, role, content, provider, model, timestamps
+- Settings remain client-side for now (level, UI language, theme, text size)
 
 ## Success Metrics
 - User completes character creation and sends first message.
@@ -67,6 +73,8 @@ An installable PWA that delivers an RPG story-driven English learning experience
 - Token bloat from long sessions: trim history and summarize.
 - LLM drift from prompt: keep strict system prompt + context block.
 - Free-tier limits: expose provider selection and allow retries.
+- RLS misconfiguration: add strict per-user policies and verify with manual tests.
+- Magic-link deliverability: show user-facing status and fallback instructions.
 
 ## Open Questions
 - Should we add a short onboarding quiz to set English level?
@@ -76,4 +84,4 @@ An installable PWA that delivers an RPG story-driven English learning experience
 - Next 16 uses ESLint v9 with flat config; use `eslint.config.mjs` and `eslint-config-next/core-web-vitals`.
 - Avoid calling `setState` inside effects; initialize from storage in the `useState` initializer.
 - Context windows and lightweight summaries are required to keep long RPG sessions coherent and within token limits.
-- Local-only storage keeps the project free-tier friendly and reduces backend complexity.
+- Supabase storage provides multi-device persistence with manageable complexity at free tier.

@@ -1,4 +1,4 @@
-import type { AppState } from "@/lib/storage";
+import type { AppState } from "@/lib/app-state";
 
 export const defaultState: AppState = {
   character: {
@@ -13,4 +13,6 @@ export const defaultState: AppState = {
   textSize: "medium",
   hasOnboarded: false,
   messages: [],
+  hasMoreMessages: false,
+  user: null,
 };
