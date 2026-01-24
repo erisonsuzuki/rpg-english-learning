@@ -37,6 +37,7 @@ GROQ_MODEL=openai/gpt-oss-20b
 NEMOTRON_MODEL=nvidia/nemotron-3-nano-30b-a3b
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_supabase_publishable_key
+NEXT_PUBLIC_SITE_URL=https://rpg-english-learning.onrender.com
 ```
 
 Optional overrides:

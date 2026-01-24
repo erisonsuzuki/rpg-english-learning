@@ -22,10 +22,12 @@ export function AuthForm({ className }: AuthFormProps) {
     if (!trimmed || authStatus === "loading") return;
     setAuthStatus("loading");
     setAuthError(null);
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+    const redirectUrl = siteUrl || window.location.origin;
     const { error } = await supabase.auth.signInWithOtp({
       email: trimmed,
       options: {
-        emailRedirectTo: window.location.origin,
+        emailRedirectTo: redirectUrl,
       },
     });
     if (error) {
