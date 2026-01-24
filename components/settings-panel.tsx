@@ -23,6 +23,11 @@ export function SettingsPanel() {
     await supabase.auth.signOut();
   };
 
+  const updateStateWithVersionCheck = (next: Partial<typeof state>) => {
+    updateState(next);
+    window.dispatchEvent(new Event("app:check-version"));
+  };
+
   return (
     <section className="panel">
       <h2>{labels.settingsTitle}</h2>
@@ -30,7 +35,9 @@ export function SettingsPanel() {
       <select
         id="english-level"
         value={state.level}
-        onChange={(event) => updateState({ level: event.target.value })}
+        onChange={(event) =>
+          updateStateWithVersionCheck({ level: event.target.value })
+        }
       >
         {LEVELS.map((level) => (
           <option key={level} value={level}>
@@ -46,7 +53,9 @@ export function SettingsPanel() {
       <select
         id="app-language"
         value={state.uiLanguage}
-        onChange={(event) => updateState({ uiLanguage: event.target.value })}
+        onChange={(event) =>
+          updateStateWithVersionCheck({ uiLanguage: event.target.value })
+        }
       >
         {LANGUAGES.map((lang) => (
           <option key={lang} value={lang}>
@@ -61,7 +70,9 @@ export function SettingsPanel() {
         id="app-theme"
         value={state.theme}
         onChange={(event) =>
-          updateState({ theme: event.target.value as (typeof THEMES)[number] })
+          updateStateWithVersionCheck({
+            theme: event.target.value as (typeof THEMES)[number],
+          })
         }
       >
         {THEMES.map((theme) => (
@@ -75,7 +86,7 @@ export function SettingsPanel() {
         id="text-size"
         value={state.textSize}
         onChange={(event) =>
-          updateState({
+          updateStateWithVersionCheck({
             textSize: event.target.value as (typeof TEXT_SIZES)[number],
           })
         }

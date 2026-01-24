@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { APP_VERSION } from "@/lib/app-version";
 import { clearAppCaches, waitForInstalled } from "@/lib/sw-update";
 import { useLabels } from "@/components/language-label";
@@ -10,14 +10,20 @@ type UpdateState = {
   busy: boolean;
 };
 
+const CHECK_THROTTLE_MS = 5 * 60 * 1000;
+
 export function UpdateBanner() {
   const labels = useLabels();
   const [state, setState] = useState<UpdateState>({
     available: false,
     busy: false,
   });
+  const lastCheckedRef = useRef(0);
 
   const checkVersion = useCallback(async () => {
+    const now = Date.now();
+    if (now - lastCheckedRef.current < CHECK_THROTTLE_MS) return;
+    lastCheckedRef.current = now;
     try {
       const response = await fetch("/api/version", { cache: "no-store" });
       if (!response.ok) return;
@@ -39,7 +45,7 @@ export function UpdateBanner() {
       if (document.visibilityState === "visible") {
         void checkVersion();
       }
-    }, 60000);
+    }, CHECK_THROTTLE_MS);
     const handleVisibility = () => {
       if (document.visibilityState === "visible") {
         void checkVersion();
