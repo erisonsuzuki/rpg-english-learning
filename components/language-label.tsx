@@ -45,6 +45,7 @@ const COPY = {
     chatSend: "Enviar",
     chatLoading: "Enviando...",
     chatError: "Não foi possível obter resposta.",
+    chatErrorTitle: "Erro",
     characterBuilderTitle: "Questionário do Personagem",
     characterBuilderIntro:
       "Responda às perguntas para gerar um perfil inicial com ajuda da IA.",
@@ -118,6 +119,7 @@ const COPY = {
     chatSend: "Send",
     chatLoading: "Sending...",
     chatError: "Could not fetch a response.",
+    chatErrorTitle: "Error",
     characterBuilderTitle: "Character Questionnaire",
     characterBuilderIntro:
       "Answer the prompts to generate a starter profile with the LLM.",

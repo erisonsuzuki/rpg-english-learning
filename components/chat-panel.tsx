@@ -6,7 +6,7 @@ import { useAppState } from "@/components/app-state";
 import { useLabels } from "@/components/language-label";
 
 export function ChatPanel() {
-  const { state, addMessage, clearMessages } = useAppState();
+  const { state, addMessage, removeMessageAt, clearMessages } = useAppState();
   const labels = useLabels();
   const [input, setInput] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
@@ -16,6 +16,17 @@ export function ChatPanel() {
     labels.chatStarterSciFi,
     labels.chatStarterVocabulary,
   ];
+
+  const errorBubble = status === "error" && error ? (
+    <div className="chat-message chat-message--error">
+      <span className="chat-role">{labels.chatErrorTitle}</span>
+      <div className="chat-bubble chat-bubble--error">
+        <span className="chat-error-icon">!</span>
+        <span>{labels.chatErrorTitle}</span>
+      </div>
+      <p className="chat-error-detail">{error}</p>
+    </div>
+  ) : null;
 
   const sendMessageWith = async (content: string) => {
     const trimmed = content.trim();
@@ -41,8 +52,15 @@ export function ChatPanel() {
       });
 
       if (!response.ok) {
-        const text = await response.text();
-        throw new Error(text || labels.chatError);
+        let message = "";
+        try {
+          const data = (await response.json()) as { error?: string };
+          message = data?.error || "";
+        } catch {
+          const text = await response.text();
+          message = text;
+        }
+        throw new Error(message || labels.chatError);
       }
 
       const data = (await response.json()) as {
@@ -65,6 +83,7 @@ export function ChatPanel() {
       const message = err instanceof Error ? err.message : labels.chatError;
       setStatus("error");
       setError(message);
+      removeMessageAt(nextMessages.length - 1);
     } finally {
       window.dispatchEvent(new Event("app:check-version"));
     }
@@ -84,40 +103,46 @@ export function ChatPanel() {
       <p className="helper-text">{labels.chatPurpose}</p>
       <div className="chat-window">
         {state.messages.length === 0 ? (
-          <div className="chat-empty">
-            <p>{labels.chatEmpty}</p>
-            <p className="helper-text">{labels.chatStartersTitle}</p>
-            <div className="chat-starters">
-              {starters.map((starter) => (
-                <button
-                  key={starter}
-                  type="button"
-                  className="chat-starter"
-                  onClick={() => handleStarter(starter)}
-                >
-                  {starter}
-                </button>
-              ))}
-            </div>
-          </div>
-        ) : (
-          state.messages.map((message, index) => (
-            <div
-              key={`${message.role}-${index}`}
-              className={`chat-message chat-message--${message.role}`}
-            >
-              <span className="chat-role">
-                {message.role === "assistant" ? "Master" : "You"}
-                {message.role === "assistant" && message.provider
-                  ? ` (${message.provider})`
-                  : ""}
-                :
-              </span>
-              <div className="chat-bubble">
-                <ReactMarkdown>{message.content}</ReactMarkdown>
+          <>
+            <div className="chat-empty">
+              <p>{labels.chatEmpty}</p>
+              <p className="helper-text">{labels.chatStartersTitle}</p>
+              <div className="chat-starters">
+                {starters.map((starter) => (
+                  <button
+                    key={starter}
+                    type="button"
+                    className="chat-starter"
+                    onClick={() => handleStarter(starter)}
+                  >
+                    {starter}
+                  </button>
+                ))}
               </div>
             </div>
-          ))
+            {errorBubble}
+          </>
+        ) : (
+          <>
+            {state.messages.map((message, index) => (
+              <div
+                key={`${message.role}-${index}`}
+                className={`chat-message chat-message--${message.role}`}
+              >
+                <span className="chat-role">
+                  {message.role === "assistant" ? "Master" : "You"}
+                  {message.role === "assistant" && message.provider
+                    ? ` (${message.provider})`
+                    : ""}
+                  :
+                </span>
+                <div className="chat-bubble">
+                  <ReactMarkdown>{message.content}</ReactMarkdown>
+                </div>
+              </div>
+            ))}
+            {errorBubble}
+          </>
         )}
       </div>
       <label htmlFor="chat-input">{labels.actionLabel}</label>
@@ -143,7 +168,6 @@ export function ChatPanel() {
       <button type="button" className="chat-clear" onClick={clearMessages}>
         {labels.clearChat}
       </button>
-      {status === "error" && error ? <p className="status error">{error}</p> : null}
     </section>
   );
 }

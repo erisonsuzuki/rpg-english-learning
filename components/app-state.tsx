@@ -18,6 +18,7 @@ type AppStateContextValue = {
   updateState: (next: Partial<AppState>) => void;
   updateCharacter: (next: Partial<AppState["character"]>) => void;
   addMessage: (message: AppState["messages"][number]) => void;
+  removeMessageAt: (index: number) => void;
   clearMessages: () => void;
   resetConversation: () => void;
 };
@@ -96,6 +97,13 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     []
   );
 
+  const removeMessageAt = useCallback((index: number) => {
+    updateStoreWith((prev) => ({
+      ...prev,
+      messages: prev.messages.filter((_, itemIndex) => itemIndex !== index),
+    }));
+  }, []);
+
   const clearMessages = useCallback(() => {
     updateStoreWith((prev) => ({
       ...prev,
@@ -114,10 +122,19 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       updateState,
       updateCharacter,
       addMessage,
+      removeMessageAt,
       clearMessages,
       resetConversation,
     }),
-    [state, updateState, updateCharacter, addMessage, clearMessages, resetConversation]
+    [
+      state,
+      updateState,
+      updateCharacter,
+      addMessage,
+      removeMessageAt,
+      clearMessages,
+      resetConversation,
+    ]
   );
 
   useEffect(() => {

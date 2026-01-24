@@ -19,6 +19,7 @@ export function CharacterBuilder() {
   const [answers, setAnswers] = useState<Answers>(emptyAnswers);
   const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
+  const [lastEditedId, setLastEditedId] = useState<keyof Answers | null>(null);
   const [showQuestionnaire, setShowQuestionnaire] = useState(false);
   const questions = useMemo<{ id: keyof Answers; label: string }[]>(
     () => [
@@ -37,6 +38,8 @@ export function CharacterBuilder() {
   );
 
   const updateAnswer = (id: keyof Answers, value: string) => {
+    setLastEditedId(id);
+    if (error) setError(null);
     setAnswers((prev) => ({ ...prev, [id]: value }));
   };
 
@@ -58,8 +61,15 @@ export function CharacterBuilder() {
       });
 
       if (!response.ok) {
-        const text = await response.text();
-        throw new Error(text || labels.characterBuilderError);
+        let message = "";
+        try {
+          const data = (await response.json()) as { error?: string };
+          message = data?.error || "";
+        } catch {
+          const text = await response.text();
+          message = text;
+        }
+        throw new Error(message || labels.characterBuilderError);
       }
 
       const data = (await response.json()) as {
@@ -104,6 +114,9 @@ export function CharacterBuilder() {
                 value={answers[question.id]}
                 onChange={(event) => updateAnswer(question.id, event.target.value)}
               />
+              {error && (lastEditedId ?? questions[0]?.id) === question.id ? (
+                <p className="form-error">{error}</p>
+              ) : null}
             </div>
           ))}
           <button type="submit" disabled={!hasAnswers || status === "loading"}>
@@ -111,7 +124,6 @@ export function CharacterBuilder() {
               ? labels.characterBuilderLoading
               : labels.characterBuilderAction}
           </button>
-          {error ? <p className="status error">{error}</p> : null}
         </form>
       ) : null}
     </section>
