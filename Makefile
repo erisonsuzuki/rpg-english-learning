@@ -1,4 +1,4 @@
-.PHONY: start stop lint
+.PHONY: start stop lint test
 
 start:
 	npm run dev
@@ -8,3 +8,6 @@ stop:
 
 lint:
 	npm run lint
+
+test:
+	npm run test
