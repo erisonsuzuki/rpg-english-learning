@@ -92,6 +92,8 @@ export function CharacterBuilder() {
       const message = err instanceof Error ? err.message : labels.characterBuilderError;
       setError(message);
       setStatus("error");
+    } finally {
+      window.dispatchEvent(new Event("app:check-version"));
     }
   };
 
