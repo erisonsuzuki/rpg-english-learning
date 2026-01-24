@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { buildSystemPrompt } from "@/lib/prompt";
+import { guardChatInput, guardChatOutput } from "@/lib/guardrails";
 import { groqChat } from "@/lib/providers/groq";
 import { nemotronChat } from "@/lib/providers/nemotron";
 import { runWithFallback } from "@/lib/providers/fallback";
@@ -21,6 +22,15 @@ export async function POST(req: Request) {
     if (!messages?.length) {
       return NextResponse.json(
         { error: "Missing chat messages" },
+        { status: 400 }
+      );
+    }
+
+    const inputGuard = guardChatInput(messages);
+    if (!inputGuard.ok) {
+      console.warn("Chat input blocked", inputGuard);
+      return NextResponse.json(
+        { error: inputGuard.message },
         { status: 400 }
       );
     }
@@ -72,6 +82,15 @@ export async function POST(req: Request) {
       model: result.model,
       usage: result.usage,
     });
+
+    const outputGuard = guardChatOutput(result.content);
+    if (!outputGuard.ok) {
+      console.warn("Chat output blocked", outputGuard);
+      return NextResponse.json(
+        { error: outputGuard.message },
+        { status: 502 }
+      );
+    }
 
     return NextResponse.json({
       output: result.content,

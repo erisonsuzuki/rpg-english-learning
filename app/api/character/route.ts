@@ -1,5 +1,10 @@
 import { NextResponse } from "next/server";
 import { buildCharacterPrompt } from "@/lib/character-prompt";
+import {
+  guardCharacterInput,
+  guardCharacterOutput,
+  validateCharacterProfile,
+} from "@/lib/guardrails";
 import { runWithFallback } from "@/lib/providers/fallback";
 import { groqChat } from "@/lib/providers/groq";
 import { nemotronChat } from "@/lib/providers/nemotron";
@@ -37,6 +42,15 @@ export async function POST(req: Request) {
       );
     }
 
+    const inputGuard = guardCharacterInput(answers);
+    if (!inputGuard.ok) {
+      console.warn("Character input blocked", inputGuard);
+      return NextResponse.json(
+        { error: inputGuard.message },
+        { status: 400 }
+      );
+    }
+
     const prompt = buildCharacterPrompt({ answers, languagePreference });
     const messages: ChatMessage[] = [
       {
@@ -52,7 +66,24 @@ export async function POST(req: Request) {
       return run(messages);
     }, preferredProvider);
 
+    const outputGuard = guardCharacterOutput(result.content);
+    if (!outputGuard.ok) {
+      console.warn("Character output blocked", outputGuard);
+      return NextResponse.json(
+        { error: outputGuard.message },
+        { status: 502 }
+      );
+    }
+
     const draftCharacter = parseCharacterProfile(result.content);
+    const profileGuard = validateCharacterProfile(draftCharacter);
+    if (!profileGuard.ok) {
+      console.warn("Character profile invalid", profileGuard);
+      return NextResponse.json(
+        { error: profileGuard.message },
+        { status: 502 }
+      );
+    }
     return NextResponse.json({ draftCharacter });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
