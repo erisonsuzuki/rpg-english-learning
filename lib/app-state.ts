@@ -11,7 +11,6 @@ export type AppState = {
   uiLanguage: string;
   theme: "light" | "dark";
   textSize: "small" | "medium" | "large";
-  hasOnboarded: boolean;
   messages: ChatMessage[];
   hasMoreMessages: boolean;
   user: AuthUser | null;

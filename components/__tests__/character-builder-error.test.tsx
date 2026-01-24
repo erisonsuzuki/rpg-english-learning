@@ -10,7 +10,6 @@ vi.mock("@/components/app-state", () => ({
       uiLanguage: "English",
       theme: "light",
       textSize: "medium",
-      hasOnboarded: true,
       messages: [],
       hasMoreMessages: false,
       user: { id: "user-1", email: "test@example.com" },
