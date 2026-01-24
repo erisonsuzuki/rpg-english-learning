@@ -84,7 +84,8 @@ const COPY = {
     authEmailPlaceholder: "voce@exemplo.com",
     authSendLink: "Enviar link mágico",
     authSending: "Enviando...",
-    authCheckEmail: "Verifique sua caixa de entrada para continuar.",
+    authCheckEmail:
+      "Verifique sua caixa de entrada para continuar. Confira também seu spam.",
     authSignedInAs: "Conectado como",
     authSignOut: "Sair",
     authUnknownUser: "Usuário",
@@ -171,7 +172,7 @@ const COPY = {
     authEmailPlaceholder: "you@example.com",
     authSendLink: "Send magic link",
     authSending: "Sending...",
-    authCheckEmail: "Check your inbox to continue.",
+    authCheckEmail: "Check your inbox to continue. Also check your spam.",
     authSignedInAs: "Signed in as",
     authSignOut: "Sign out",
     authUnknownUser: "User",

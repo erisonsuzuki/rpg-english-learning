@@ -60,7 +60,7 @@ describe("AuthForm", () => {
         },
       });
       expect(
-        await screen.findByText("Check your inbox to continue.")
+        await screen.findByText("Check your inbox to continue. Also check your spam.")
       ).toBeTruthy();
     } finally {
       process.env.NEXT_PUBLIC_SITE_URL = previousSiteUrl;
