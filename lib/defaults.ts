@@ -11,7 +11,6 @@ export const defaultState: AppState = {
   uiLanguage: "English",
   theme: "dark",
   textSize: "medium",
-  hasOnboarded: false,
   messages: [],
   hasMoreMessages: false,
   user: null,

@@ -8,6 +8,8 @@ import {
 import { runWithFallback } from "@/lib/providers/fallback";
 import { groqChat } from "@/lib/providers/groq";
 import { nemotronChat } from "@/lib/providers/nemotron";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { createSupabaseServerClient } from "@/utils/supabase/server";
 import type { ChatMessage, CharacterProfile } from "@/lib/types";
 
 type CharacterRequest = {
@@ -31,6 +33,26 @@ function parseCharacterProfile(raw: string): CharacterProfile {
 
 export async function POST(req: Request) {
   try {
+    const supabase = await createSupabaseServerClient();
+    const { data, error } = await supabase.auth.getUser();
+    if (error) {
+      console.warn("Failed to read Supabase user", error);
+    }
+    if (!data.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const rateLimit = checkRateLimit(data.user.id, 10, 60_000);
+    if (!rateLimit.ok) {
+      return NextResponse.json(
+        { error: "Too many requests" },
+        {
+          status: 429,
+          headers: { "Retry-After": String(rateLimit.retryAfterSeconds) },
+        }
+      );
+    }
+
     const body = (await req.json()) as CharacterRequest;
     const { answers, languagePreference } = body;
     const preferredProvider = body.provider === "nemotron" ? "nemotron" : "groq";
