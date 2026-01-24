@@ -14,6 +14,15 @@ const COPY = {
     chatTitle: "Chat da História",
     chatPurpose:
       "Um RPG interativo para praticar inglês com correções em português.",
+    landingTitle: "Aprenda inglês com narrativa RPG",
+    landingIntro:
+      "Explore histórias guiadas, receba correções e pratique vocabulário no contexto.",
+    landingWhatYouDoTitle: "O que você pode fazer",
+    landingWhatYouDoStory: "Jogar um RPG interativo com o Mestre da história.",
+    landingWhatYouDoCorrections:
+      "Receber correções e explicações no idioma do app.",
+    landingWhatYouDoVocabulary:
+      "Praticar novas palavras e gramática em contexto.",
     levelLabel: "Nível de Inglês",
     levelBeginner: "Iniciante",
     levelIntermediate: "Intermediário",
@@ -92,6 +101,15 @@ const COPY = {
     chatTitle: "Story Chat",
     chatPurpose:
       "An interactive RPG that builds your English through story and coaching.",
+    landingTitle: "Learn English through RPG storytelling",
+    landingIntro:
+      "Explore guided stories, receive corrections, and practice vocabulary in context.",
+    landingWhatYouDoTitle: "What you can do",
+    landingWhatYouDoStory: "Play an interactive RPG with the story master.",
+    landingWhatYouDoCorrections:
+      "Get corrections and explanations in your app language.",
+    landingWhatYouDoVocabulary:
+      "Practice new words and grammar in context.",
     levelLabel: "English Level",
     levelBeginner: "Beginner",
     levelIntermediate: "Intermediate",
