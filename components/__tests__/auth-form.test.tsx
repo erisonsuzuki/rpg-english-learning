@@ -17,6 +17,8 @@ const getSupabaseBrowserClientMock = vi.mocked(getSupabaseBrowserClient);
 
 describe("AuthForm", () => {
   it("submits a magic link and shows confirmation", async () => {
+    const previousSiteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+    process.env.NEXT_PUBLIC_SITE_URL = "https://rpg-english-learning.onrender.com";
     const signInWithOtpMock = vi.fn().mockResolvedValue({ error: null });
     getSupabaseBrowserClientMock.mockReturnValue({
       auth: { signInWithOtp: signInWithOtpMock },
@@ -50,10 +52,18 @@ describe("AuthForm", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: "Send magic link" }));
 
-    expect(signInWithOtpMock).toHaveBeenCalledWith({
-      email: "test@example.com",
-      options: { emailRedirectTo: window.location.origin },
-    });
-    expect(await screen.findByText("Check your inbox to continue.")).toBeTruthy();
+    try {
+      expect(signInWithOtpMock).toHaveBeenCalledWith({
+        email: "test@example.com",
+        options: {
+          emailRedirectTo: "https://rpg-english-learning.onrender.com",
+        },
+      });
+      expect(
+        await screen.findByText("Check your inbox to continue.")
+      ).toBeTruthy();
+    } finally {
+      process.env.NEXT_PUBLIC_SITE_URL = previousSiteUrl;
+    }
   });
 });
