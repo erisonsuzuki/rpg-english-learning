@@ -5,6 +5,7 @@ An installable RPG storytelling app that helps Portuguese-speaking users practic
 ## Features
 - RPG chat with strict prompt rules from `docs/prompt.md`
 - Character creation (name, class, backstory, stats) with optional LLM-assisted questionnaire
+- Input guardrails for prompt injection and sensitive data, with inline error feedback
 - English level selection (Beginner/Intermediate/Advanced)
 - App UI language toggle (Portuguese/English)
 - Dark mode toggle with persistent theme preference
@@ -19,6 +20,7 @@ An installable RPG storytelling app that helps Portuguese-speaking users practic
 - React
 - TypeScript
 - ESLint (flat config)
+- Vitest + Testing Library (unit and UI tests)
 
 ## Getting Started
 1) Install dependencies:
@@ -40,14 +42,14 @@ Optional overrides:
 
 3) Run the dev server:
 ```bash
-npm run dev
+make start
 ```
 
 ## Scripts
-- `npm run dev` - start local dev server
-- `npm run build` - build for production
-- `npm run start` - run production build
-- `npm run lint` - run ESLint
+- `make start` - start local dev server
+- `make stop` - stop the dev server
+- `make lint` - run ESLint
+- `make test` - run unit tests (Vitest)
 
 ## Project Structure
 - `app/` - Next.js app router pages and layout
@@ -66,6 +68,8 @@ npm run dev
 - The system prompt is built from `docs/prompt.md` plus runtime context.
 - Long chats are summarized and trimmed, with an additional context-size cap to avoid token overflows.
 - Provider/model metadata is logged on the server for debugging.
+- Guardrails check chat + character inputs and block prompt injection or sensitive data requests.
+- Errors are surfaced inline in the chat stream or under the character field that triggered them.
 
 ## License
 TBD

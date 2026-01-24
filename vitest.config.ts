@@ -6,8 +6,9 @@ const rootDir = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
   test: {
-    environment: "node",
-    include: ["**/__tests__/**/*.test.ts"],
+    environment: "jsdom",
+    include: ["**/__tests__/**/*.{test.ts,test.tsx}"],
+    setupFiles: ["./vitest.setup.ts"],
   },
   resolve: {
     alias: {
