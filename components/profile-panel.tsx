@@ -6,16 +6,21 @@ import { useLabels } from "@/components/language-label";
 export function ProfilePanel() {
   const { state, updateCharacter } = useAppState();
   const labels = useLabels();
+  const isAuthenticated = Boolean(state.user);
 
   return (
     <section className="panel">
       <h2>{labels.characterTitle}</h2>
+      {!isAuthenticated ? (
+        <p className="helper-text">{labels.authRequired}</p>
+      ) : null}
       <label htmlFor="character-name">{labels.characterFieldName}</label>
       <input
         id="character-name"
         placeholder={labels.characterPlaceholderName}
         value={state.character.name || ""}
         onChange={(event) => updateCharacter({ name: event.target.value })}
+        disabled={!isAuthenticated}
       />
       <label htmlFor="character-class">{labels.characterFieldClass}</label>
       <input
@@ -23,6 +28,7 @@ export function ProfilePanel() {
         placeholder={labels.characterPlaceholderClass}
         value={state.character.class || ""}
         onChange={(event) => updateCharacter({ class: event.target.value })}
+        disabled={!isAuthenticated}
       />
       <label htmlFor="character-backstory">{labels.characterFieldBackstory}</label>
       <textarea
@@ -31,6 +37,7 @@ export function ProfilePanel() {
         placeholder={labels.characterPlaceholderBackstory}
         value={state.character.backstory || ""}
         onChange={(event) => updateCharacter({ backstory: event.target.value })}
+        disabled={!isAuthenticated}
       />
       <label htmlFor="character-stats">{labels.characterFieldStats}</label>
       <textarea
@@ -39,6 +46,7 @@ export function ProfilePanel() {
         placeholder={labels.characterPlaceholderStats}
         value={state.character.stats || ""}
         onChange={(event) => updateCharacter({ stats: event.target.value })}
+        disabled={!isAuthenticated}
       />
     </section>
   );

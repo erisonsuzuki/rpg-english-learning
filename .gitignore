@@ -12,3 +12,4 @@ pnpm-debug.log*
 coverage/
 .turbo/
 .vercel/
+supabase/.temp/*

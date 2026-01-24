@@ -12,6 +12,8 @@ vi.mock("@/components/app-state", () => ({
       textSize: "medium",
       hasOnboarded: true,
       messages: [],
+      hasMoreMessages: false,
+      user: { id: "user-1", email: "test@example.com" },
     },
     updateCharacter: vi.fn(),
   }),

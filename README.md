@@ -9,7 +9,8 @@ An installable RPG storytelling app that helps Portuguese-speaking users practic
 - English level selection (Beginner/Intermediate/Advanced)
 - App UI language toggle (Portuguese/English)
 - Dark mode toggle with persistent theme preference
-- Local-only persistence of settings and chat history (storage usage indicator + capped history)
+- Supabase-backed persistence of character and chat history
+- Magic-link authentication via email
 - Chat starters when history is empty
 - Markdown rendering for chat responses
 - PWA installable shell with service worker caching
@@ -34,6 +35,8 @@ GROQ_API_KEY=your_groq_key
 NVIDIA_API_KEY=your_nvidia_key
 GROQ_MODEL=openai/gpt-oss-20b
 NEMOTRON_MODEL=nvidia/nemotron-3-nano-30b-a3b
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_supabase_publishable_key
 ```
 
 Optional overrides:
@@ -54,7 +57,7 @@ make start
 ## Project Structure
 - `app/` - Next.js app router pages and layout
 - `components/` - UI components and app state provider
-- `lib/` - prompt builder, providers, storage, context tools
+- `lib/` - prompt builder, providers, Supabase data helpers, context tools
 - `docs/` - product and prompt documentation
 - `public/` - PWA assets and service worker
 

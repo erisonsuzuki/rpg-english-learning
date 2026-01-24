@@ -1,6 +1,19 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { act, render, screen } from "@testing-library/react";
 import { AppStateProvider, useAppState } from "@/components/app-state";
+
+const mockSupabase = {
+  auth: {
+    getSession: vi.fn().mockResolvedValue({ data: { session: null }, error: null }),
+    onAuthStateChange: vi.fn().mockReturnValue({
+      data: { subscription: { unsubscribe: vi.fn() } },
+    }),
+  },
+};
+
+vi.mock("@/utils/supabase/client", () => ({
+  getSupabaseBrowserClient: () => mockSupabase,
+}));
 
 function MessageCount() {
   const { state, addMessage, removeMessageAt } = useAppState();

@@ -6,7 +6,7 @@ It summarizes structure, commands, and code style expectations.
 ## Project Structure & Module Organization
 - `app/`: Next.js App Router pages, layouts, API routes, and global styles.
 - `components/`: UI components and client state provider.
-- `lib/`: Prompt builder, LLM providers, storage, and context utilities.
+- `lib/`: Prompt builder, LLM providers, Supabase helpers, and context utilities.
 - `public/`: PWA assets (manifest, icons) and service worker.
 - `docs/`: Product docs and the core prompt (`docs/prompt.md`).
 
@@ -32,6 +32,8 @@ It summarizes structure, commands, and code style expectations.
 - Required keys:
   - `GROQ_API_KEY`
   - `NVIDIA_API_KEY`
+  - `NEXT_PUBLIC_SUPABASE_URL`
+  - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
 - Optional model overrides:
   - `GROQ_MODEL`
   - `NEMOTRON_MODEL`
@@ -93,9 +95,9 @@ It summarizes structure, commands, and code style expectations.
 - When chat history is empty, show starter suggestions.
 
 ## Storage and Persistence
-- Local storage persists `AppState` via `lib/storage.ts`.
-- `saveState` caps stored messages; keep caps updated if message volume grows.
-- Settings screen displays storage usage.
+- Supabase persists chat messages and character profiles per authenticated user.
+- Keep RLS policies strict to user ownership.
+- Settings remain client-side and reset on refresh.
 
 ## Linting & Quality Checks
 - ESLint is mandatory; keep `npm run lint` green.
