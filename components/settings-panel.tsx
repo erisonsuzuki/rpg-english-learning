@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useAppState } from "@/components/app-state";
+import { AuthForm } from "@/components/auth-form";
 import { InstallButton } from "@/components/install-button";
 import { useLabels } from "@/components/language-label";
 import { getSupabaseBrowserClient } from "@/utils/supabase/client";
@@ -15,32 +16,8 @@ export function SettingsPanel() {
   const { state, updateState, resetConversation } = useAppState();
   const labels = useLabels();
   const supabase = useMemo(() => getSupabaseBrowserClient(), []);
-  const [email, setEmail] = useState("");
-  const [authStatus, setAuthStatus] = useState<
-    "idle" | "loading" | "sent" | "error"
-  >("idle");
-  const [authError, setAuthError] = useState<string | null>(null);
 
   const isAuthenticated = Boolean(state.user);
-
-  const sendMagicLink = async () => {
-    const trimmed = email.trim();
-    if (!trimmed || authStatus === "loading") return;
-    setAuthStatus("loading");
-    setAuthError(null);
-    const { error } = await supabase.auth.signInWithOtp({
-      email: trimmed,
-      options: {
-        emailRedirectTo: window.location.origin,
-      },
-    });
-    if (error) {
-      setAuthStatus("error");
-      setAuthError(error.message);
-      return;
-    }
-    setAuthStatus("sent");
-  };
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -125,33 +102,7 @@ export function SettingsPanel() {
           {labels.authSignedInAs} {state.user?.email || labels.authUnknownUser}
         </p>
       ) : (
-        <>
-          <label htmlFor="auth-email">{labels.authEmailLabel}</label>
-          <input
-            id="auth-email"
-            type="email"
-            placeholder={labels.authEmailPlaceholder}
-            value={email}
-            onChange={(event) => {
-              setEmail(event.target.value);
-              if (authStatus !== "idle") setAuthStatus("idle");
-              if (authError) setAuthError(null);
-            }}
-          />
-          <button
-            type="button"
-            onClick={sendMagicLink}
-            disabled={authStatus === "loading" || !email.trim()}
-          >
-            {authStatus === "loading" ? labels.authSending : labels.authSendLink}
-          </button>
-          {authStatus === "sent" ? (
-            <p className="helper-text">{labels.authCheckEmail}</p>
-          ) : null}
-          {authStatus === "error" && authError ? (
-            <p className="form-error">{authError}</p>
-          ) : null}
-        </>
+        <AuthForm />
       )}
       {isAuthenticated ? (
         <button type="button" onClick={handleSignOut}>

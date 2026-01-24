@@ -139,6 +139,58 @@ body {
   gap: 16px;
 }
 
+.landing-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: 16px;
+}
+
+.landing-hero h2 {
+  margin: 0;
+  font-size: 22px;
+  color: var(--accent);
+}
+
+.landing-intro {
+  font-size: 15px;
+}
+
+.landing-actions {
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.landing-actions h3 {
+  margin: 0;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.landing-actions ul {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 8px;
+}
+
+.landing-actions li {
+  color: var(--text);
+}
+
+.landing-card {
+  align-self: start;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
 .panel {
   background: var(--panel);
   border: 1px solid var(--border);
@@ -484,6 +536,10 @@ body {
 
 @media (max-width: 1024px) {
   .app-body {
+    grid-template-columns: 1fr;
+  }
+
+  .landing-shell {
     grid-template-columns: 1fr;
   }
 

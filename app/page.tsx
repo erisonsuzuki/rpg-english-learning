@@ -1,9 +1,5 @@
-import { ChatPanel } from "@/components/chat-panel";
+import { HomeContent } from "@/components/home-content";
 
 export default function HomePage() {
-  return (
-    <section className="app-body">
-      <ChatPanel />
-    </section>
-  );
+  return <HomeContent />;
 }
