@@ -13,3 +13,4 @@ coverage/
 .turbo/
 .vercel/
 supabase/.temp/*
+public/favicon.ico

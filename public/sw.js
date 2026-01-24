@@ -32,6 +32,11 @@ self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
 
   const url = new URL(event.request.url);
+  if (!isCacheableProtocol(url.protocol)) return;
+  if (url.origin !== self.location.origin) return;
+  if (event.request.cache === "only-if-cached" && event.request.mode !== "same-origin") {
+    return;
+  }
   if (url.pathname === "/api/version") {
     return;
   }
@@ -73,3 +78,7 @@ self.addEventListener("fetch", (event) => {
     })
   );
 });
+
+function isCacheableProtocol(protocol) {
+  return protocol === "http:" || protocol === "https:";
+}
