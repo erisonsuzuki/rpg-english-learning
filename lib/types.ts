@@ -33,3 +33,20 @@ export type PromptContext = {
   learningGoal?: string;
   narratorPersona?: string;
 };
+
+export type ReviewVocabularyItem = {
+  term: string;
+  meaning: string;
+  example: string;
+};
+
+export type ReviewSentenceImprovement = {
+  original: string;
+  improved: string;
+  explanation: string;
+};
+
+export type ReviewResult = {
+  vocabulary: ReviewVocabularyItem[];
+  sentenceImprovements: ReviewSentenceImprovement[];
+};

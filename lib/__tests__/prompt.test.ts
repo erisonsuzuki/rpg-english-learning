@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { buildSystemPrompt } from "@/lib/prompt";
+import { buildSystemPrompt } from "@/lib/prompts";
 
 describe("buildSystemPrompt", () => {
   it("returns the base prompt when no context is provided", () => {

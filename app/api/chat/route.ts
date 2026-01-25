@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { buildSystemPrompt } from "@/lib/prompt";
+import { buildSystemPrompt } from "@/lib/prompts";
 import { guardChatInput, guardChatOutput } from "@/lib/guardrails";
 import { groqChat } from "@/lib/providers/groq";
 import { nemotronChat } from "@/lib/providers/nemotron";
@@ -7,6 +7,7 @@ import { runWithFallback } from "@/lib/providers/fallback";
 import { trimMessages, trimMessagesByChars } from "@/lib/context";
 import { maybeSummarize } from "@/lib/summary";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { logLlmRequest, logLlmResponse } from "@/lib/llm-logging";
 import { createSupabaseServerClient } from "@/utils/supabase/server";
 import type { ChatMessage, PromptContext } from "@/lib/types";
 
@@ -98,7 +99,8 @@ export async function POST(req: Request) {
       (total, message) => total + message.content.length,
       0
     );
-    console.info("LLM request", {
+    logLlmRequest({
+      feature: "chat",
       preferredProvider,
       messageCount: finalPayload.length,
       originalMessages: payload.length,
@@ -116,7 +118,8 @@ export async function POST(req: Request) {
       return run(providerPayload);
     }, preferredProvider);
 
-    console.info("LLM response", {
+    logLlmResponse({
+      feature: "chat",
       provider,
       model: result.model,
       usage: result.usage,

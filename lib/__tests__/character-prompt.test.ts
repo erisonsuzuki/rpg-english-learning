@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildCharacterPrompt } from "@/lib/character-prompt";
+import { buildCharacterPrompt } from "@/lib/prompts";
 
 describe("buildCharacterPrompt", () => {
   it("uses English when no language preference is provided", () => {
