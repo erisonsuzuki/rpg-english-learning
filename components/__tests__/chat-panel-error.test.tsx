@@ -24,6 +24,10 @@ useAppStateMock.mockReturnValue({
       character: {},
       level: "Beginner",
       uiLanguage: "English",
+      correctionStyle: "Teacher Mode",
+      rpgTheme: "",
+      learningGoal: "Conversation",
+      narratorPersona: "Classic",
       theme: "light",
       textSize: "medium",
       user: { id: "user-1", email: "test@example.com" },
@@ -35,6 +39,7 @@ useAppStateMock.mockReturnValue({
     persistPendingMessages: persistPendingMessagesMock,
     loadMoreMessages: loadMoreMessagesMock,
     updateState: updateStateMock,
+    updateLlmSettings: vi.fn(),
     updateCharacter: updateCharacterMock,
     resetConversation: resetConversationMock,
   });
@@ -80,6 +85,10 @@ describe("ChatPanel load more", () => {
         character: {},
         level: "Beginner",
         uiLanguage: "English",
+        correctionStyle: "Teacher Mode",
+        rpgTheme: "",
+        learningGoal: "Conversation",
+        narratorPersona: "Classic",
         theme: "light",
         textSize: "medium",
         user: { id: "user-1", email: "test@example.com" },
@@ -91,17 +100,21 @@ describe("ChatPanel load more", () => {
       persistPendingMessages: persistPendingMessagesMock,
       loadMoreMessages: loadMoreMessagesMock,
       updateState: updateStateMock,
+      updateLlmSettings: vi.fn(),
       updateCharacter: updateCharacterMock,
       resetConversation: resetConversationMock,
     });
 
     const { container } = render(<ChatPanel />);
 
-    const chatWindow = container.querySelector(".chat-window") as HTMLDivElement;
+    const chatWindow = (
+      container as unknown as { querySelector: (selector: string) => HTMLElement | null }
+    ).querySelector(".chat-window") as unknown as { scrollTop: number } | null;
     expect(chatWindow).toBeTruthy();
     expect(loadMoreMessagesMock).not.toHaveBeenCalled();
+    if (!chatWindow) return;
     chatWindow.scrollTop = 10;
-    fireEvent.scroll(chatWindow);
+    fireEvent.scroll(chatWindow as unknown as Element);
 
     expect(loadMoreMessagesMock).toHaveBeenCalled();
   });

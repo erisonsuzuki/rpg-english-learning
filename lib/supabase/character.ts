@@ -8,6 +8,7 @@ export type CharacterRow = {
   class: string | null;
   backstory: string | null;
   stats: string | null;
+  weakness: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -18,13 +19,16 @@ export function mapRowToCharacter(row: CharacterRow): CharacterProfile {
     class: row.class ?? "",
     backstory: row.backstory ?? "",
     stats: row.stats ?? "",
+    weakness: row.weakness ?? "",
   };
 }
 
 export async function fetchCharacter(client: SupabaseClient, userId: string) {
   const { data, error } = await client
     .from("characters")
-    .select("id,user_id,name,class,backstory,stats,created_at,updated_at")
+    .select(
+      "id,user_id,name,class,backstory,stats,weakness,created_at,updated_at"
+    )
     .eq("user_id", userId)
     .order("updated_at", { ascending: false })
     .limit(1)
@@ -47,6 +51,7 @@ export async function upsertCharacter(
       class: profile.class ?? null,
       backstory: profile.backstory ?? null,
       stats: profile.stats ?? null,
+      weakness: profile.weakness ?? null,
       updated_at: new Date().toISOString(),
     },
     { onConflict: "user_id" }

@@ -26,6 +26,11 @@ describe("buildCharacterPrompt", () => {
     expect(prompt).toContain("- Class: Mage");
   });
 
+  it("requests weakness in JSON keys", () => {
+    const prompt = buildCharacterPrompt({ answers: { Name: "Nova" } });
+    expect(prompt).toContain("name, class, backstory, stats, weakness");
+  });
+
   it("falls back to no answers when empty", () => {
     const prompt = buildCharacterPrompt({ answers: {} });
     expect(prompt).toContain("- no answers provided");

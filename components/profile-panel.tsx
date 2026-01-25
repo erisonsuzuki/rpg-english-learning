@@ -57,6 +57,16 @@ export function ProfilePanel() {
         }}
         disabled={!isAuthenticated}
       />
+      <label htmlFor="character-weakness">{labels.characterFieldWeakness}</label>
+      <input
+        id="character-weakness"
+        placeholder={labels.characterPlaceholderWeakness}
+        value={state.character.weakness || ""}
+        onChange={(event) => {
+          updateCharacter({ weakness: getEventTargetValue(event.target) });
+        }}
+        disabled={!isAuthenticated}
+      />
     </section>
   );
 }
