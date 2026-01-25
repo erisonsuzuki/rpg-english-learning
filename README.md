@@ -60,11 +60,12 @@ make start
 - `components/` - UI components and app state provider
 - `lib/` - prompt builder, providers, Supabase data helpers, context tools
 - `docs/` - product and prompt documentation
-- `public/` - PWA assets and service worker
+- `public/` - static assets (icons, PWA images)
 
 ## PWA Notes
-- Manifest: `public/manifest.json`
-- Service worker: `public/sw.js`
+- Manifest: `app/manifest.ts`
+- Service worker: `app/sw.ts` (served at `/serwist/sw.js`)
+- Serwist route: `app/serwist/[path]/route.ts`
 - Icons: `public/icons/`
 
 ## LLM Notes

@@ -1,10 +1,15 @@
-const CACHE_PREFIX = "rpg-english-shell-";
+const CACHE_PREFIXES = ["rpg-english-shell-", "serwist", "workbox-precache"];
 
 export async function clearAppCaches() {
-  if (!("caches" in window)) return;
-  const keys = await caches.keys();
-  const targets = keys.filter((key) => key.startsWith(CACHE_PREFIX));
-  await Promise.all(targets.map((key) => caches.delete(key)));
+  const root = globalThis as typeof globalThis & {
+    caches?: CacheStorage;
+  };
+  if (!root.caches) return;
+  const keys = await root.caches.keys();
+  const targets = keys.filter((key) =>
+    CACHE_PREFIXES.some((prefix) => key.startsWith(prefix))
+  );
+  await Promise.all(targets.map((key) => root.caches?.delete(key)));
 }
 
 export function waitForInstalled(installing: ServiceWorker | null | undefined) {

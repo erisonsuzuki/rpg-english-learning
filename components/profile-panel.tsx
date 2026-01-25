@@ -2,6 +2,7 @@
 
 import { useAppState } from "@/components/app-state";
 import { useLabels } from "@/components/language-label";
+import { getEventTargetValue } from "@/lib/dom";
 
 export function ProfilePanel() {
   const { state, updateCharacter } = useAppState();
@@ -19,7 +20,9 @@ export function ProfilePanel() {
         id="character-name"
         placeholder={labels.characterPlaceholderName}
         value={state.character.name || ""}
-        onChange={(event) => updateCharacter({ name: event.target.value })}
+        onChange={(event) => {
+          updateCharacter({ name: getEventTargetValue(event.target) });
+        }}
         disabled={!isAuthenticated}
       />
       <label htmlFor="character-class">{labels.characterFieldClass}</label>
@@ -27,7 +30,9 @@ export function ProfilePanel() {
         id="character-class"
         placeholder={labels.characterPlaceholderClass}
         value={state.character.class || ""}
-        onChange={(event) => updateCharacter({ class: event.target.value })}
+        onChange={(event) => {
+          updateCharacter({ class: getEventTargetValue(event.target) });
+        }}
         disabled={!isAuthenticated}
       />
       <label htmlFor="character-backstory">{labels.characterFieldBackstory}</label>
@@ -36,7 +41,9 @@ export function ProfilePanel() {
         rows={4}
         placeholder={labels.characterPlaceholderBackstory}
         value={state.character.backstory || ""}
-        onChange={(event) => updateCharacter({ backstory: event.target.value })}
+        onChange={(event) => {
+          updateCharacter({ backstory: getEventTargetValue(event.target) });
+        }}
         disabled={!isAuthenticated}
       />
       <label htmlFor="character-stats">{labels.characterFieldStats}</label>
@@ -45,7 +52,9 @@ export function ProfilePanel() {
         rows={3}
         placeholder={labels.characterPlaceholderStats}
         value={state.character.stats || ""}
-        onChange={(event) => updateCharacter({ stats: event.target.value })}
+        onChange={(event) => {
+          updateCharacter({ stats: getEventTargetValue(event.target) });
+        }}
         disabled={!isAuthenticated}
       />
     </section>

@@ -112,19 +112,23 @@ export function SettingsPanel() {
 ### Phase 5: PWA Install + Cache
 **Objective**: Add manifest, icons, and service worker caching for the shell.
 **Code Proposal**:
-```json
-// public/manifest.json
-{
-  "name": "RPG English Learning",
-  "short_name": "RPG English",
-  "start_url": "/",
-  "display": "standalone",
-  "background_color": "#f5f0e6",
-  "theme_color": "#1f2937",
-  "icons": [
-    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
-  ]
+```ts
+// app/manifest.ts
+import type { MetadataRoute } from "next";
+
+export default function manifest(): MetadataRoute.Manifest {
+  return {
+    name: "RPG English Learning",
+    short_name: "RPG English",
+    start_url: "/",
+    display: "standalone",
+    background_color: "#f5f0e6",
+    theme_color: "#1f2937",
+    icons: [
+      { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+      { src: "/icons/icon-512.png", sizes: "512x512", type: "image/png" }
+    ]
+  };
 }
 ```
 **Tests**:

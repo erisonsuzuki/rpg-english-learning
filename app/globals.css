@@ -32,6 +32,7 @@ body {
   font-family: "Georgia", "Times New Roman", serif;
   color: var(--text);
   background: radial-gradient(circle at top, #faf6ef, var(--bg));
+  overscroll-behavior: none;
 }
 
 :root[data-theme="dark"] body {
@@ -44,6 +45,32 @@ body {
   display: flex;
   flex-direction: column;
   gap: 20px;
+}
+
+.page-skeleton {
+  min-height: 40vh;
+  border-radius: 18px;
+  background: linear-gradient(120deg, #f4ede2 0%, #fdfbf7 50%, #f4ede2 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+}
+
+.offline-panel {
+  text-align: center;
+  gap: 10px;
+}
+
+:root[data-theme="dark"] .page-skeleton {
+  background: linear-gradient(120deg, #1e242c 0%, #2b323d 50%, #1e242c 100%);
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 100% 50%;
+  }
 }
 
 .rpg-topbar {

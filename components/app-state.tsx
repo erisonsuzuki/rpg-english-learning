@@ -10,6 +10,7 @@ import {
   useSyncExternalStore,
 } from "react";
 import type { AppState } from "@/lib/app-state";
+import { getBrowserRuntime } from "@/lib/browser-runtime";
 import { defaultState } from "@/lib/defaults";
 import { getSupabaseBrowserClient } from "@/utils/supabase/client";
 import type { Session } from "@supabase/supabase-js";
@@ -48,7 +49,10 @@ const listeners = new Set<() => void>();
 const MESSAGE_PAGE_SIZE = 50;
 
 function getSnapshot() {
-  if (typeof window === "undefined") return defaultState;
+  const root = getBrowserRuntime();
+  if (!root.document) {
+    return defaultState;
+  }
   return storeState;
 }
 
@@ -149,8 +153,9 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   }, [supabase, hydrateUserData]);
 
   useEffect(() => {
-    if (typeof document !== "undefined") {
-      document.documentElement.dataset.theme = state.theme;
+    const root = getBrowserRuntime();
+    if (root.document?.documentElement?.dataset) {
+      root.document.documentElement.dataset.theme = state.theme;
     }
   }, [state.theme]);
 
