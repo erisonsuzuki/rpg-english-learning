@@ -1,6 +1,7 @@
 "use client";
 
 import type { ChangeEvent } from "react";
+import type { AppState } from "@/lib/app-state";
 import { useCallback, useEffect, useMemo } from "react";
 import { parseAsStringLiteral, useQueryState } from "nuqs";
 import { useAppState } from "@/components/app-state";
@@ -90,7 +91,7 @@ export function SettingsPanel() {
   };
 
   const updateLlmSettingsWithVersionCheck = useCallback(
-    (next: Partial<typeof state.llmSettings>) => {
+    (next: Partial<NonNullable<AppState["llmSettings"]>>) => {
       updateLlmSettings(next ?? {});
       getBrowserRuntime().dispatchEvent?.(new Event("app:check-version"));
     },
@@ -147,6 +148,23 @@ export function SettingsPanel() {
   return (
     <section className="panel">
       <h2>{labels.settingsTitle}</h2>
+      <h3>{labels.authTitle}</h3>
+      {!isAuthenticated ? (
+        <p className="helper-text">{labels.authIntro}</p>
+      ) : null}
+      {isAuthenticated ? (
+        <p className="helper-text">
+          {labels.authSignedInAs} {state.user?.email || labels.authUnknownUser}
+        </p>
+      ) : (
+        <AuthForm />
+      )}
+      {isAuthenticated ? (
+        <button type="button" onClick={handleSignOut}>
+          {labels.authSignOut}
+        </button>
+      ) : null}
+      <h3>{labels.settingsGeneralTitle}</h3>
       <label htmlFor="english-level">{labels.levelLabel}</label>
       <select
         id="english-level"
@@ -205,85 +223,73 @@ export function SettingsPanel() {
           </option>
         ))}
       </select>
-      <h3>{labels.llmSettingsTitle}</h3>
-      <label htmlFor="correction-style">{labels.correctionStyleLabel}</label>
-      <select
-        id="correction-style"
-        value={state.correctionStyle}
-        onChange={handleCorrectionStyleChange}
-      >
-        {CORRECTION_STYLES.map((style) => (
-          <option key={style} value={style}>
-            {style === "Narrative Flow"
-              ? labels.correctionStyleOptionNarrative
-              : style === "Perfectionist"
-                ? labels.correctionStyleOptionPerfectionist
-                : labels.correctionStyleOptionTeacher}
-          </option>
-        ))}
-      </select>
-      <label htmlFor="learning-goal">{labels.learningGoalLabel}</label>
-      <select
-        id="learning-goal"
-        value={state.learningGoal}
-        onChange={handleLearningGoalChange}
-      >
-        {LEARNING_GOALS.map((goal) => (
-          <option key={goal} value={goal}>
-            {goal === "Basics"
-              ? labels.learningGoalOptionBasics
-              : goal === "Reading"
-                ? labels.learningGoalOptionReading
-                : labels.learningGoalOptionConversation}
-          </option>
-        ))}
-      </select>
-      <label htmlFor="narrator-persona">{labels.narratorPersonaLabel}</label>
-      <select
-        id="narrator-persona"
-        value={state.narratorPersona}
-        onChange={handleNarratorPersonaChange}
-      >
-        {NARRATOR_PERSONAS.map((persona) => (
-          <option key={persona} value={persona}>
-            {persona === "Mystery"
-              ? labels.narratorPersonaOptionMystery
-              : persona === "Humor"
-                ? labels.narratorPersonaOptionHumor
-                : labels.narratorPersonaOptionClassic}
-          </option>
-        ))}
-      </select>
-      <label htmlFor="rpg-theme">{labels.rpgThemeLabel}</label>
-      <input
-        id="rpg-theme"
-        value={state.rpgTheme}
-        placeholder={labels.rpgThemePlaceholder}
-        onChange={(event) => {
-          updateLlmSettingsWithVersionCheck({
-            rpgTheme: getEventTargetValue(event.target),
-          });
-        }}
-      />
+      {isAuthenticated ? (
+        <>
+          <h3>{labels.llmSettingsTitle}</h3>
+          <label htmlFor="correction-style">{labels.correctionStyleLabel}</label>
+          <select
+            id="correction-style"
+            value={state.correctionStyle}
+            onChange={handleCorrectionStyleChange}
+          >
+            {CORRECTION_STYLES.map((style) => (
+              <option key={style} value={style}>
+                {style === "Narrative Flow"
+                  ? labels.correctionStyleOptionNarrative
+                  : style === "Perfectionist"
+                    ? labels.correctionStyleOptionPerfectionist
+                    : labels.correctionStyleOptionTeacher}
+              </option>
+            ))}
+          </select>
+          <label htmlFor="learning-goal">{labels.learningGoalLabel}</label>
+          <select
+            id="learning-goal"
+            value={state.learningGoal}
+            onChange={handleLearningGoalChange}
+          >
+            {LEARNING_GOALS.map((goal) => (
+              <option key={goal} value={goal}>
+                {goal === "Basics"
+                  ? labels.learningGoalOptionBasics
+                  : goal === "Reading"
+                    ? labels.learningGoalOptionReading
+                    : labels.learningGoalOptionConversation}
+              </option>
+            ))}
+          </select>
+          <label htmlFor="narrator-persona">{labels.narratorPersonaLabel}</label>
+          <select
+            id="narrator-persona"
+            value={state.narratorPersona}
+            onChange={handleNarratorPersonaChange}
+          >
+            {NARRATOR_PERSONAS.map((persona) => (
+              <option key={persona} value={persona}>
+                {persona === "Mystery"
+                  ? labels.narratorPersonaOptionMystery
+                  : persona === "Humor"
+                    ? labels.narratorPersonaOptionHumor
+                    : labels.narratorPersonaOptionClassic}
+              </option>
+            ))}
+          </select>
+          <label htmlFor="rpg-theme">{labels.rpgThemeLabel}</label>
+          <input
+            id="rpg-theme"
+            value={state.rpgTheme}
+            placeholder={labels.rpgThemePlaceholder}
+            onChange={(event) => {
+              updateLlmSettingsWithVersionCheck({
+                rpgTheme: getEventTargetValue(event.target),
+              });
+            }}
+          />
+        </>
+      ) : null}
       <button type="button" onClick={resetConversation}>
         {labels.clearData}
       </button>
-      <h3>{labels.authTitle}</h3>
-      {!isAuthenticated ? (
-        <p className="helper-text">{labels.authIntro}</p>
-      ) : null}
-      {isAuthenticated ? (
-        <p className="helper-text">
-          {labels.authSignedInAs} {state.user?.email || labels.authUnknownUser}
-        </p>
-      ) : (
-        <AuthForm />
-      )}
-      {isAuthenticated ? (
-        <button type="button" onClick={handleSignOut}>
-          {labels.authSignOut}
-        </button>
-      ) : null}
       <InstallButton />
     </section>
   );

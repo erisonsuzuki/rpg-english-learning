@@ -10,6 +10,7 @@ type LanguageLabelProps = {
 const COPY = {
   Portuguese: {
     settingsTitle: "Configurações",
+    settingsGeneralTitle: "Preferências do app",
     characterTitle: "Personagem",
     chatTitle: "Chat da História",
     chatPurpose:
@@ -117,6 +118,7 @@ const COPY = {
   },
   English: {
     settingsTitle: "Settings",
+    settingsGeneralTitle: "App preferences",
     characterTitle: "Character",
     chatTitle: "Story Chat",
     chatPurpose:
@@ -190,7 +192,7 @@ const COPY = {
     characterHelpAction: "Ask the LLM for help",
     characterHelpHide: "Hide questionnaire",
     authTitle: "Account",
-    authIntro: "Sign in with your email to save your progress.",
+    authIntro: "Use your email to save and continue your journey.",
     authEmailLabel: "Email",
     authEmailPlaceholder: "you@example.com",
     authSendLink: "Send magic link",
