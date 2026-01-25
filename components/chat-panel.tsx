@@ -4,6 +4,8 @@ import { useCallback, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { useAppState } from "@/components/app-state";
 import { useLabels } from "@/components/language-label";
+import { getBrowserRuntime } from "@/lib/browser-runtime";
+import { getEventTargetScrollTop, getEventTargetValue } from "@/lib/dom";
 
 export function ChatPanel() {
   const {
@@ -115,7 +117,7 @@ export function ChatPanel() {
       setError(message);
       removeMessageAt(nextMessages.length - 1, { persist: false });
     } finally {
-      window.dispatchEvent(new Event("app:check-version"));
+      getBrowserRuntime().dispatchEvent?.(new Event("app:check-version"));
     }
   };
 
@@ -151,9 +153,9 @@ export function ChatPanel() {
       if (!hasUserScrolledRef.current) {
         hasUserScrolledRef.current = true;
       }
-      const target = event.currentTarget;
+      const scrollTop = getEventTargetScrollTop(event.target);
       if (
-        target.scrollTop <= 20 &&
+        scrollTop <= 20 &&
         hasUserScrolledRef.current &&
         state.hasMoreMessages &&
         state.messages.length > 50 &&
@@ -237,7 +239,9 @@ export function ChatPanel() {
             : labels.chatPlaceholder
         }
         value={input}
-        onChange={(event) => setInput(event.target.value)}
+        onChange={(event) => {
+          setInput(getEventTargetValue(event.target));
+        }}
         rows={4}
         disabled={!isAuthenticated}
       />

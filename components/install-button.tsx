@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useLabels } from "@/components/language-label";
+import { getBrowserRuntime } from "@/lib/browser-runtime";
 
 type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>;
@@ -15,13 +16,14 @@ export function InstallButton() {
   );
 
   useEffect(() => {
+    const root = getBrowserRuntime();
     const handler = (event: Event) => {
       event.preventDefault();
       setPromptEvent(event as BeforeInstallPromptEvent);
     };
 
-    window.addEventListener("beforeinstallprompt", handler);
-    return () => window.removeEventListener("beforeinstallprompt", handler);
+    root.addEventListener?.("beforeinstallprompt", handler);
+    return () => root.removeEventListener?.("beforeinstallprompt", handler);
   }, []);
 
   const handleInstall = async () => {

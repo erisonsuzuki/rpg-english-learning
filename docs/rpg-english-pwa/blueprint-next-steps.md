@@ -11,19 +11,20 @@ Add core UX for chat + onboarding, introduce RPG-themed layout with dedicated ch
 ```tsx
 // app/layout.tsx
 import Link from "next/link";
-import { ServiceWorkerRegister } from "@/components/sw-register";
+import { SerwistClientProvider } from "@/components/serwist-provider";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pt-BR">
       <body>
-        <ServiceWorkerRegister />
-        <header className="rpg-topbar">
-          <Link href="/">Story</Link>
-          <Link href="/character">Character</Link>
-          <Link href="/settings">Settings</Link>
-        </header>
-        <main className="rpg-shell">{children}</main>
+        <SerwistClientProvider>
+          <header className="rpg-topbar">
+            <Link href="/">Story</Link>
+            <Link href="/character">Character</Link>
+            <Link href="/settings">Settings</Link>
+          </header>
+          <main className="rpg-shell">{children}</main>
+        </SerwistClientProvider>
       </body>
     </html>
   );

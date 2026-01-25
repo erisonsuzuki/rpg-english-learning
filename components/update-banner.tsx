@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { APP_VERSION } from "@/lib/app-version";
+import { getBrowserRuntime } from "@/lib/browser-runtime";
 import { clearAppCaches, waitForInstalled } from "@/lib/sw-update";
 import { useLabels } from "@/components/language-label";
 
@@ -38,35 +39,36 @@ export function UpdateBanner() {
 
   useEffect(() => {
     if (state.available) return;
-    const timer = window.setTimeout(() => {
+    const root = getBrowserRuntime();
+    const timer = root.setTimeout?.(() => {
       void checkVersion();
     }, 0);
-    const interval = window.setInterval(() => {
-      if (document.visibilityState === "visible") {
+    const interval = root.setInterval?.(() => {
+      if (root.document?.visibilityState === "visible") {
         void checkVersion();
       }
     }, CHECK_THROTTLE_MS);
     const handleVisibility = () => {
-      if (document.visibilityState === "visible") {
+      if (root.document?.visibilityState === "visible") {
         void checkVersion();
       }
     };
     const handleManualCheck = () => {
       void checkVersion();
     };
-    document.addEventListener("visibilitychange", handleVisibility);
-    window.addEventListener("app:check-version", handleManualCheck);
+    root.document?.addEventListener?.("visibilitychange", handleVisibility);
+    root.addEventListener?.("app:check-version", handleManualCheck);
     return () => {
-      window.clearTimeout(timer);
-      window.clearInterval(interval);
-      document.removeEventListener("visibilitychange", handleVisibility);
-      window.removeEventListener("app:check-version", handleManualCheck);
+      if (timer) root.clearTimeout?.(timer);
+      if (interval) root.clearInterval?.(interval);
+      root.document?.removeEventListener?.("visibilitychange", handleVisibility);
+      root.removeEventListener?.("app:check-version", handleManualCheck);
     };
   }, [checkVersion, state.available]);
 
   useEffect(() => {
     if (!state.available) return;
-    navigator.serviceWorker
+    getBrowserRuntime().navigator?.serviceWorker
       ?.getRegistration()
       .then((registration) => registration?.update())
       .catch(() => null);
@@ -74,23 +76,24 @@ export function UpdateBanner() {
 
   const handleUpdate = async () => {
     setState((prev) => ({ ...prev, busy: true }));
+    const root = getBrowserRuntime();
     let reloaded = false;
     const reload = () => {
       if (reloaded) return;
       reloaded = true;
-      window.location.reload();
+      root.location?.reload?.();
     };
     try {
-      navigator.serviceWorker?.addEventListener("controllerchange", reload, {
+      root.navigator?.serviceWorker?.addEventListener("controllerchange", reload, {
         once: true,
       });
-      const registration = await navigator.serviceWorker?.getRegistration();
+      const registration = await root.navigator?.serviceWorker?.getRegistration();
       if (!registration) {
         await clearAppCaches();
         reload();
         return;
       }
-      if (!navigator.serviceWorker?.controller) {
+      if (!root.navigator?.serviceWorker?.controller) {
         await clearAppCaches();
         reload();
         return;
@@ -103,7 +106,7 @@ export function UpdateBanner() {
         installed?.postMessage({ type: "SKIP_WAITING" });
       }
       await clearAppCaches();
-      window.setTimeout(reload, 8000);
+      root.setTimeout?.(reload, 8000);
     } catch {
       setState((prev) => ({ ...prev, busy: false }));
     }

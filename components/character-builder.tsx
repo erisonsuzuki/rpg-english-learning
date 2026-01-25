@@ -3,6 +3,8 @@
 import { useMemo, useState } from "react";
 import { useAppState } from "@/components/app-state";
 import { useLabels } from "@/components/language-label";
+import { getBrowserRuntime } from "@/lib/browser-runtime";
+import { getEventTargetValue } from "@/lib/dom";
 
 const QUESTION_IDS = ["theme", "motivation", "strengths", "flaws", "role"] as const;
 
@@ -93,7 +95,7 @@ export function CharacterBuilder() {
       setError(message);
       setStatus("error");
     } finally {
-      window.dispatchEvent(new Event("app:check-version"));
+      getBrowserRuntime().dispatchEvent?.(new Event("app:check-version"));
     }
   };
 
@@ -116,11 +118,13 @@ export function CharacterBuilder() {
           {questions.map((question) => (
             <div key={question.id} className="form-row">
               <label htmlFor={`character-${question.id}`}>{question.label}</label>
-              <input
-                id={`character-${question.id}`}
-                value={answers[question.id]}
-                onChange={(event) => updateAnswer(question.id, event.target.value)}
-              />
+                <input
+                  id={`character-${question.id}`}
+                  value={answers[question.id]}
+                  onChange={(event) => {
+                    updateAnswer(question.id, getEventTargetValue(event.target));
+                  }}
+                />
               {error && (lastEditedId ?? questions[0]?.id) === question.id ? (
                 <p className="form-error">{error}</p>
               ) : null}

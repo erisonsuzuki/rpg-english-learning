@@ -2,6 +2,8 @@
 
 import { useMemo, useState } from "react";
 import { useLabels } from "@/components/language-label";
+import { getBrowserRuntime } from "@/lib/browser-runtime";
+import { getEventTargetValue } from "@/lib/dom";
 import { getSupabaseBrowserClient } from "@/utils/supabase/client";
 
 type AuthFormProps = {
@@ -23,7 +25,7 @@ export function AuthForm({ className }: AuthFormProps) {
     setAuthStatus("loading");
     setAuthError(null);
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
-    const redirectUrl = siteUrl || window.location.origin;
+    const redirectUrl = siteUrl || getBrowserRuntime().location?.origin || "";
     const { error } = await supabase.auth.signInWithOtp({
       email: trimmed,
       options: {
@@ -47,7 +49,7 @@ export function AuthForm({ className }: AuthFormProps) {
         placeholder={labels.authEmailPlaceholder}
         value={email}
         onChange={(event) => {
-          setEmail(event.target.value);
+          setEmail(getEventTargetValue(event.target));
           if (authStatus !== "idle") setAuthStatus("idle");
           if (authError) setAuthError(null);
         }}

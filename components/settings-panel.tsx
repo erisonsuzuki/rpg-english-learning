@@ -1,10 +1,14 @@
 "use client";
 
-import { useMemo } from "react";
+import type { ChangeEvent } from "react";
+import { useCallback, useEffect, useMemo } from "react";
+import { parseAsStringLiteral, useQueryState } from "nuqs";
 import { useAppState } from "@/components/app-state";
 import { AuthForm } from "@/components/auth-form";
 import { InstallButton } from "@/components/install-button";
 import { useLabels } from "@/components/language-label";
+import { getBrowserRuntime } from "@/lib/browser-runtime";
+import { getEventTargetValue } from "@/lib/dom";
 import { getSupabaseBrowserClient } from "@/utils/supabase/client";
 
 const LEVELS = ["Beginner", "Intermediate", "Advanced"] as const;
@@ -12,10 +16,25 @@ const LANGUAGES = ["Portuguese", "English"] as const;
 const THEMES = ["light", "dark"] as const;
 const TEXT_SIZES = ["small", "medium", "large"] as const;
 
+const levelParser = parseAsStringLiteral(LEVELS);
+const languageParser = parseAsStringLiteral(LANGUAGES);
+const themeParser = parseAsStringLiteral(THEMES);
+const textSizeParser = parseAsStringLiteral(TEXT_SIZES);
+
 export function SettingsPanel() {
   const { state, updateState, resetConversation } = useAppState();
   const labels = useLabels();
   const supabase = useMemo(() => getSupabaseBrowserClient(), []);
+  const [levelQuery, setLevelQuery] = useQueryState("level", levelParser);
+  const [languageQuery, setLanguageQuery] = useQueryState(
+    "lang",
+    languageParser
+  );
+  const [themeQuery, setThemeQuery] = useQueryState("theme", themeParser);
+  const [textSizeQuery, setTextSizeQuery] = useQueryState(
+    "text",
+    textSizeParser
+  );
 
   const isAuthenticated = Boolean(state.user);
 
@@ -23,10 +42,69 @@ export function SettingsPanel() {
     await supabase.auth.signOut();
   };
 
-  const updateStateWithVersionCheck = (next: Partial<typeof state>) => {
-    updateState(next);
-    window.dispatchEvent(new Event("app:check-version"));
+  const updateStateWithVersionCheck = useCallback(
+    (next: Partial<typeof state>) => {
+      updateState(next);
+      getBrowserRuntime().dispatchEvent?.(new Event("app:check-version"));
+    },
+    [updateState]
+  );
+
+  const handleLevelChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    const nextLevel = (getEventTargetValue(event.target) || state.level) as (
+      typeof LEVELS
+    )[number];
+    updateStateWithVersionCheck({ level: nextLevel });
+    void setLevelQuery(nextLevel);
   };
+
+  const handleLanguageChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    const nextLang = (getEventTargetValue(event.target) || state.uiLanguage) as (
+      typeof LANGUAGES
+    )[number];
+    updateStateWithVersionCheck({ uiLanguage: nextLang });
+    void setLanguageQuery(nextLang);
+  };
+
+  const handleThemeChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    const nextTheme = (getEventTargetValue(event.target) || state.theme) as (
+      typeof THEMES
+    )[number];
+    updateStateWithVersionCheck({ theme: nextTheme });
+    void setThemeQuery(nextTheme);
+  };
+
+  const handleTextSizeChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    const nextSize = (
+      getEventTargetValue(event.target) || state.textSize
+    ) as (typeof TEXT_SIZES)[number];
+    updateStateWithVersionCheck({ textSize: nextSize });
+    void setTextSizeQuery(nextSize);
+  };
+
+  useEffect(() => {
+    if (levelQuery && levelQuery !== state.level) {
+      updateStateWithVersionCheck({ level: levelQuery });
+    }
+  }, [levelQuery, state.level, updateStateWithVersionCheck]);
+
+  useEffect(() => {
+    if (languageQuery && languageQuery !== state.uiLanguage) {
+      updateStateWithVersionCheck({ uiLanguage: languageQuery });
+    }
+  }, [languageQuery, state.uiLanguage, updateStateWithVersionCheck]);
+
+  useEffect(() => {
+    if (themeQuery && themeQuery !== state.theme) {
+      updateStateWithVersionCheck({ theme: themeQuery });
+    }
+  }, [themeQuery, state.theme, updateStateWithVersionCheck]);
+
+  useEffect(() => {
+    if (textSizeQuery && textSizeQuery !== state.textSize) {
+      updateStateWithVersionCheck({ textSize: textSizeQuery });
+    }
+  }, [textSizeQuery, state.textSize, updateStateWithVersionCheck]);
 
   return (
     <section className="panel">
@@ -35,9 +113,7 @@ export function SettingsPanel() {
       <select
         id="english-level"
         value={state.level}
-        onChange={(event) =>
-          updateStateWithVersionCheck({ level: event.target.value })
-        }
+        onChange={handleLevelChange}
       >
         {LEVELS.map((level) => (
           <option key={level} value={level}>
@@ -53,9 +129,7 @@ export function SettingsPanel() {
       <select
         id="app-language"
         value={state.uiLanguage}
-        onChange={(event) =>
-          updateStateWithVersionCheck({ uiLanguage: event.target.value })
-        }
+        onChange={handleLanguageChange}
       >
         {LANGUAGES.map((lang) => (
           <option key={lang} value={lang}>
@@ -69,11 +143,7 @@ export function SettingsPanel() {
       <select
         id="app-theme"
         value={state.theme}
-        onChange={(event) =>
-          updateStateWithVersionCheck({
-            theme: event.target.value as (typeof THEMES)[number],
-          })
-        }
+        onChange={handleThemeChange}
       >
         {THEMES.map((theme) => (
           <option key={theme} value={theme}>
@@ -85,11 +155,7 @@ export function SettingsPanel() {
       <select
         id="text-size"
         value={state.textSize}
-        onChange={(event) =>
-          updateStateWithVersionCheck({
-            textSize: event.target.value as (typeof TEXT_SIZES)[number],
-          })
-        }
+        onChange={handleTextSizeChange}
       >
         {TEXT_SIZES.map((size) => (
           <option key={size} value={size}>
