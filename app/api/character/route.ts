@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { buildCharacterPrompt } from "@/lib/character-prompt";
+import { buildCharacterPrompt } from "@/lib/prompts";
 import {
   guardCharacterInput,
   guardCharacterOutput,
@@ -9,6 +9,7 @@ import { runWithFallback } from "@/lib/providers/fallback";
 import { groqChat } from "@/lib/providers/groq";
 import { nemotronChat } from "@/lib/providers/nemotron";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { logLlmRequest, logLlmResponse } from "@/lib/llm-logging";
 import { createSupabaseServerClient } from "@/utils/supabase/server";
 import type { ChatMessage, CharacterProfile } from "@/lib/types";
 
@@ -83,10 +84,36 @@ export async function POST(req: Request) {
       { role: "user" as const, content: prompt },
     ];
 
-    const { result } = await runWithFallback((provider) => {
+    const answerCount = Object.values(answers).filter((value) => value.trim())
+      .length;
+    const totalAnswerChars = Object.values(answers).reduce(
+      (total, value) => total + value.length,
+      0
+    );
+    const payloadChars = messages.reduce(
+      (total, message) => total + message.content.length,
+      0
+    );
+    logLlmRequest({
+      feature: "character",
+      preferredProvider,
+      messageCount: messages.length,
+      answerCount,
+      totalAnswerChars,
+      payloadChars,
+    });
+
+    const { result, provider } = await runWithFallback((provider) => {
       const run = provider === "nemotron" ? nemotronChat : groqChat;
       return run(messages);
     }, preferredProvider);
+
+    logLlmResponse({
+      feature: "character",
+      provider,
+      model: result.model,
+      usage: result.usage,
+    });
 
     const outputGuard = guardCharacterOutput(result.content);
     if (!outputGuard.ok) {

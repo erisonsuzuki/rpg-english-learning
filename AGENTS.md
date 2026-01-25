@@ -1,31 +1,34 @@
 # Repository Guidelines
 
-This file is intended for agentic coding assistants working in this repo.
+This file is for agentic coding assistants working in this repo.
 It summarizes structure, commands, and code style expectations.
 
 ## Project Structure & Module Organization
 - `app/`: Next.js App Router pages, layouts, API routes, and global styles.
 - `components/`: UI components and client state provider.
-- `lib/`: Prompt builder, LLM providers, Supabase helpers, and context utilities.
+- `lib/`: core utilities, state types, providers, and helpers.
+- `lib/prompts/`: prompt builders (system, character, review).
 - `public/`: PWA assets (manifest, icons) and service worker.
-- `docs/`: Product docs and the core prompt (`docs/prompt.md`).
+- `docs/`: product docs and the core prompt (`docs/prompt.md`).
 
 ## Tooling and Commands
 ### Local Development
 - `npm run dev`: run Next.js dev server (Turbopack).
 - `npm run build`: production build.
 - `npm run start`: serve the production build.
+- `npm run stop`: stop the production server.
 - `npm run lint`: run ESLint across the project.
 
-### Testing
-- No test framework is configured yet.
-- When tests are added, document them here.
-- Prefer colocated tests in `__tests__/` or `*.test.ts(x)` files.
+### Testing (Vitest)
+- `npm run test`: run all tests in CI mode.
+- `npm run test:watch`: run tests in watch mode.
 
-### Single-test Guidance (future)
-- If a test runner is introduced:
-  - Prefer `npm test -- <path>` or runner-native commands (e.g., `vitest <path>`).
-  - Document the exact command used for a single test.
+### Single-test Guidance
+- Run a single file:
+  - `npm run test -- components/__tests__/review-panel.test.tsx`
+- Run a single test by name:
+  - `npx vitest -t "ReviewPanel"`
+- Prefer colocated tests in `__tests__/` or `*.test.ts(x)` files.
 
 ## Configuration and Environment
 - Runtime expects `.env.local` for secrets.
@@ -39,10 +42,11 @@ It summarizes structure, commands, and code style expectations.
   - `NEMOTRON_MODEL`
 
 ## Prompt and LLM Rules
-- All model behavior must follow `docs/prompt.md`.
-- Keep dynamic runtime context in `lib/prompt.ts` only.
-- If you change prompt behavior, update `docs/prompt.md` first.
-- If prompt changes alter output format, update UI expectations in chat rendering.
+- The core story system prompt lives in `docs/prompt.md`.
+- Prompt builders live in `lib/prompts/`.
+- Update `docs/prompt.md` before changing system prompt behavior.
+- If prompt output format changes, update UI expectations in rendering components.
+- Keep guardrails enforced in `lib/guardrails.ts` for inputs and outputs.
 
 ## Code Style and Conventions
 ### Formatting
@@ -86,6 +90,7 @@ It summarizes structure, commands, and code style expectations.
 ## API and Providers
 - Chat endpoint: `app/api/chat/route.ts`.
 - Character endpoint: `app/api/character/route.ts`.
+- Review endpoint: `app/api/review/route.ts`.
 - Providers live in `lib/providers/` and must return `ProviderResult`.
 - `runWithFallback` returns `{ result, provider }` and logs provider failures.
 
@@ -111,6 +116,6 @@ It summarizes structure, commands, and code style expectations.
   - Screenshots for UI updates.
   - Links to issues/tasks if available.
 
-## Missing Files
+## Cursor/Copilot Rules
 - No `.cursor/rules`, `.cursorrules`, or `.github/copilot-instructions.md` found.
 - If added later, update this document accordingly.
