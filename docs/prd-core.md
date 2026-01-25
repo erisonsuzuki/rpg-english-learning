@@ -23,7 +23,7 @@ An installable PWA that delivers an RPG story-driven English learning experience
 ## Core User Flows
 1. Open the app and see the RPG English onboarding experience.
 2. Set English level (Beginner/Intermediate/Advanced).
-3. Create or update character profile (name, class, backstory, stats).
+3. Create or update character profile (name, class, backstory, stats, weakness).
 4. Start chatting and receive RPG narrative + corrections.
 5. Reset conversation or clear chat history.
 
@@ -60,9 +60,10 @@ An installable PWA that delivers an RPG story-driven English learning experience
 - Summaries must preserve story facts, corrections, and vocabulary.
 
 ## Data Model (Supabase)
-- Characters: user_id, name, class, backstory, stats, timestamps
+- Characters: user_id, name, class, backstory, stats, weakness, timestamps
 - ChatMessages: user_id, role, content, provider, model, timestamps
 - Settings remain client-side for now (level, UI language, theme, text size)
+- LLM settings persist per user (correction style, RPG theme, learning goal, narrator persona)
 
 ## Success Metrics
 - User completes character creation and sends first message.

@@ -38,7 +38,16 @@ export async function POST(req: Request) {
     }
 
     const body = (await req.json()) as ChatRequest;
-    const { messages, character, level, uiLanguage } = body;
+    const {
+      messages,
+      character,
+      level,
+      uiLanguage,
+      correctionStyle,
+      rpgTheme,
+      learningGoal,
+      narratorPersona,
+    } = body;
     const preferredProvider = body.provider === "nemotron" ? "nemotron" : "groq";
 
     if (!messages?.length) {
@@ -57,7 +66,15 @@ export async function POST(req: Request) {
       );
     }
 
-    const system = buildSystemPrompt({ character, level, uiLanguage });
+    const system = buildSystemPrompt({
+      character,
+      level,
+      uiLanguage,
+      correctionStyle,
+      rpgTheme,
+      learningGoal,
+      narratorPersona,
+    });
     const summarized = await maybeSummarize(messages);
     const trimmed = trimMessages(summarized);
     const payload: ChatMessage[] = [

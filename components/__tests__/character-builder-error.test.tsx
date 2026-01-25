@@ -8,6 +8,10 @@ vi.mock("@/components/app-state", () => ({
       character: {},
       level: "Beginner",
       uiLanguage: "English",
+      correctionStyle: "Teacher Mode",
+      rpgTheme: "",
+      learningGoal: "Conversation",
+      narratorPersona: "Classic",
       theme: "light",
       textSize: "medium",
       messages: [],
@@ -15,6 +19,7 @@ vi.mock("@/components/app-state", () => ({
       user: { id: "user-1", email: "test@example.com" },
     },
     updateCharacter: vi.fn(),
+    updateLlmSettings: vi.fn(),
   }),
 }));
 
@@ -33,8 +38,10 @@ describe("CharacterBuilder error rendering", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Ask the LLM for help" }));
 
-    const themeInput = screen.getByLabelText("Preferred RPG theme?") as HTMLInputElement;
-    fireEvent.change(themeInput, { target: { value: "sk-12345678901234567890" } });
+    const voiceInput = screen.getByLabelText(
+      "How did your character learn to speak?"
+    ) as HTMLInputElement;
+    fireEvent.change(voiceInput, { target: { value: "sk-12345678901234567890" } });
 
     await act(async () => {
       fireEvent.click(screen.getByRole("button", { name: "Generate Profile" }));
@@ -44,7 +51,10 @@ describe("CharacterBuilder error rendering", () => {
       "Input includes a token-like secret."
     );
     expect(errorMessage).toBeTruthy();
-    expect(themeInput.closest(".form-row")?.textContent).toContain(
+    const fieldRow = (
+      voiceInput as unknown as { parentElement?: { textContent?: string } }
+    ).parentElement;
+    expect(fieldRow?.textContent).toContain(
       "Input includes a token-like secret."
     );
   });

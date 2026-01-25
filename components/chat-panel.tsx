@@ -75,6 +75,10 @@ export function ChatPanel() {
           character: state.character,
           level: state.level,
           uiLanguage: state.uiLanguage,
+          correctionStyle: state.correctionStyle,
+          rpgTheme: state.rpgTheme,
+          learningGoal: state.learningGoal,
+          narratorPersona: state.narratorPersona,
         }),
       });
 

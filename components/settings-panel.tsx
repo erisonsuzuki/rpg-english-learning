@@ -15,6 +15,13 @@ const LEVELS = ["Beginner", "Intermediate", "Advanced"] as const;
 const LANGUAGES = ["Portuguese", "English"] as const;
 const THEMES = ["light", "dark"] as const;
 const TEXT_SIZES = ["small", "medium", "large"] as const;
+const CORRECTION_STYLES = [
+  "Narrative Flow",
+  "Teacher Mode",
+  "Perfectionist",
+] as const;
+const LEARNING_GOALS = ["Basics", "Conversation", "Reading"] as const;
+const NARRATOR_PERSONAS = ["Classic", "Mystery", "Humor"] as const;
 
 const levelParser = parseAsStringLiteral(LEVELS);
 const languageParser = parseAsStringLiteral(LANGUAGES);
@@ -22,7 +29,7 @@ const themeParser = parseAsStringLiteral(THEMES);
 const textSizeParser = parseAsStringLiteral(TEXT_SIZES);
 
 export function SettingsPanel() {
-  const { state, updateState, resetConversation } = useAppState();
+  const { state, updateState, updateLlmSettings, resetConversation } = useAppState();
   const labels = useLabels();
   const supabase = useMemo(() => getSupabaseBrowserClient(), []);
   const [levelQuery, setLevelQuery] = useQueryState("level", levelParser);
@@ -80,6 +87,37 @@ export function SettingsPanel() {
     ) as (typeof TEXT_SIZES)[number];
     updateStateWithVersionCheck({ textSize: nextSize });
     void setTextSizeQuery(nextSize);
+  };
+
+  const updateLlmSettingsWithVersionCheck = useCallback(
+    (next: Partial<typeof state.llmSettings>) => {
+      updateLlmSettings(next ?? {});
+      getBrowserRuntime().dispatchEvent?.(new Event("app:check-version"));
+    },
+    [updateLlmSettings]
+  );
+
+  const handleCorrectionStyleChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    const nextStyle = (
+      getEventTargetValue(event.target) || state.correctionStyle
+    ) as (typeof CORRECTION_STYLES)[number];
+    updateLlmSettingsWithVersionCheck({ correctionStyle: nextStyle });
+  };
+
+  const handleLearningGoalChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    const nextGoal = (
+      getEventTargetValue(event.target) || state.learningGoal
+    ) as (typeof LEARNING_GOALS)[number];
+    updateLlmSettingsWithVersionCheck({ learningGoal: nextGoal });
+  };
+
+  const handleNarratorPersonaChange = (
+    event: ChangeEvent<HTMLSelectElement>
+  ) => {
+    const nextPersona = (
+      getEventTargetValue(event.target) || state.narratorPersona
+    ) as (typeof NARRATOR_PERSONAS)[number];
+    updateLlmSettingsWithVersionCheck({ narratorPersona: nextPersona });
   };
 
   useEffect(() => {
@@ -167,6 +205,66 @@ export function SettingsPanel() {
           </option>
         ))}
       </select>
+      <h3>{labels.llmSettingsTitle}</h3>
+      <label htmlFor="correction-style">{labels.correctionStyleLabel}</label>
+      <select
+        id="correction-style"
+        value={state.correctionStyle}
+        onChange={handleCorrectionStyleChange}
+      >
+        {CORRECTION_STYLES.map((style) => (
+          <option key={style} value={style}>
+            {style === "Narrative Flow"
+              ? labels.correctionStyleOptionNarrative
+              : style === "Perfectionist"
+                ? labels.correctionStyleOptionPerfectionist
+                : labels.correctionStyleOptionTeacher}
+          </option>
+        ))}
+      </select>
+      <label htmlFor="learning-goal">{labels.learningGoalLabel}</label>
+      <select
+        id="learning-goal"
+        value={state.learningGoal}
+        onChange={handleLearningGoalChange}
+      >
+        {LEARNING_GOALS.map((goal) => (
+          <option key={goal} value={goal}>
+            {goal === "Basics"
+              ? labels.learningGoalOptionBasics
+              : goal === "Reading"
+                ? labels.learningGoalOptionReading
+                : labels.learningGoalOptionConversation}
+          </option>
+        ))}
+      </select>
+      <label htmlFor="narrator-persona">{labels.narratorPersonaLabel}</label>
+      <select
+        id="narrator-persona"
+        value={state.narratorPersona}
+        onChange={handleNarratorPersonaChange}
+      >
+        {NARRATOR_PERSONAS.map((persona) => (
+          <option key={persona} value={persona}>
+            {persona === "Mystery"
+              ? labels.narratorPersonaOptionMystery
+              : persona === "Humor"
+                ? labels.narratorPersonaOptionHumor
+                : labels.narratorPersonaOptionClassic}
+          </option>
+        ))}
+      </select>
+      <label htmlFor="rpg-theme">{labels.rpgThemeLabel}</label>
+      <input
+        id="rpg-theme"
+        value={state.rpgTheme}
+        placeholder={labels.rpgThemePlaceholder}
+        onChange={(event) => {
+          updateLlmSettingsWithVersionCheck({
+            rpgTheme: getEventTargetValue(event.target),
+          });
+        }}
+      />
       <button type="button" onClick={resetConversation}>
         {labels.clearData}
       </button>

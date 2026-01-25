@@ -9,15 +9,27 @@ export type ChatMessage = {
   model?: string;
 };
 
+export type LlmSettings = {
+  correctionStyle?: string;
+  rpgTheme?: string;
+  learningGoal?: string;
+  narratorPersona?: string;
+};
+
 export type CharacterProfile = {
   name?: string;
   class?: string;
   backstory?: string;
   stats?: string;
+  weakness?: string;
 };
 
 export type PromptContext = {
   character?: CharacterProfile;
   level?: string;
   uiLanguage?: string;
+  correctionStyle?: string;
+  rpgTheme?: string;
+  learningGoal?: string;
+  narratorPersona?: string;
 };

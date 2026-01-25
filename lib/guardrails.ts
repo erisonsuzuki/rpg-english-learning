@@ -240,6 +240,16 @@ export function guardCharacterOutput(raw: string): GuardrailResult {
     };
   }
 
+  try {
+    JSON.parse(trimmed);
+  } catch {
+    return {
+      ok: false,
+      code: "invalid-format",
+      message: "Character output must be strict JSON.",
+    };
+  }
+
   return { ok: true };
 }
 

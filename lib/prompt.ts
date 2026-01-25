@@ -14,6 +14,7 @@ function formatCharacterBlock(context: PromptContext) {
     character.class ? `Class: ${character.class}` : "",
     character.backstory ? `Backstory: ${character.backstory}` : "",
     character.stats ? `Stats: ${character.stats}` : "",
+    character.weakness ? `Weakness: ${character.weakness}` : "",
   ].filter(Boolean);
 
   return lines.length ? `Character Profile\n${lines.join("\n")}` : "";
@@ -26,6 +27,10 @@ export function buildSystemPrompt(context: PromptContext) {
     "If English level or RPG theme are missing, ask the user for them.",
     context.level ? `English Level: ${context.level}` : "",
     context.uiLanguage ? `App UI Language: ${context.uiLanguage}` : "",
+    context.correctionStyle ? `Correction Style: ${context.correctionStyle}` : "",
+    context.rpgTheme ? `RPG Theme: ${context.rpgTheme}` : "",
+    context.learningGoal ? `Learning Goal: ${context.learningGoal}` : "",
+    context.narratorPersona ? `Narrator Persona: ${context.narratorPersona}` : "",
     formatCharacterBlock(context),
   ].filter(Boolean);
 

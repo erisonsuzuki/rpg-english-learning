@@ -26,11 +26,16 @@ import {
   fetchCharacter,
   upsertCharacter,
 } from "@/lib/supabase/character";
+import {
+  fetchLlmSettings,
+  upsertLlmSettings,
+} from "@/lib/supabase/llm-settings";
 
 type AppStateContextValue = {
   state: AppState;
   updateState: (next: Partial<AppState>) => void;
   updateCharacter: (next: Partial<AppState["character"]>) => void;
+  updateLlmSettings: (next: Partial<AppState["llmSettings"]>) => void;
   addMessage: (
     message: AppState["messages"][number],
     options?: { persist?: boolean }
@@ -84,14 +89,20 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     async (userId: string) => {
       isHydrating.current = true;
       try {
-        const [character, messages] = await Promise.all([
+        const [character, messages, settings] = await Promise.all([
           fetchCharacter(supabase, userId),
           fetchMessages(supabase, userId, { limit: MESSAGE_PAGE_SIZE + 1 }),
+          fetchLlmSettings(supabase, userId),
         ]);
         const slicedMessages = (messages ?? []).slice(0, MESSAGE_PAGE_SIZE);
         updateStoreWith((prev) => ({
           ...prev,
           character: character ?? defaultState.character,
+          llmSettings: settings ?? prev.llmSettings,
+          correctionStyle: settings?.correctionStyle ?? prev.correctionStyle,
+          rpgTheme: settings?.rpgTheme ?? prev.rpgTheme,
+          learningGoal: settings?.learningGoal ?? prev.learningGoal,
+          narratorPersona: settings?.narratorPersona ?? prev.narratorPersona,
           messages: slicedMessages,
           hasMoreMessages: (messages ?? []).length > MESSAGE_PAGE_SIZE,
         }));
@@ -138,6 +149,17 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
           ...prev,
           user,
           character: shouldReset ? defaultState.character : prev.character,
+          llmSettings: shouldReset ? defaultState.llmSettings : prev.llmSettings,
+          correctionStyle: shouldReset
+            ? defaultState.correctionStyle
+            : prev.correctionStyle,
+          rpgTheme: shouldReset ? defaultState.rpgTheme : prev.rpgTheme,
+          learningGoal: shouldReset
+            ? defaultState.learningGoal
+            : prev.learningGoal,
+          narratorPersona: shouldReset
+            ? defaultState.narratorPersona
+            : prev.narratorPersona,
           messages: shouldReset ? [] : prev.messages,
           hasMoreMessages: shouldReset ? false : prev.hasMoreMessages,
         }));
@@ -162,6 +184,36 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const updateState = useCallback((next: Partial<AppState>) => {
     updateStoreWith((prev) => ({ ...prev, ...next }));
   }, []);
+
+  const updateLlmSettings = useCallback(
+    (next: Partial<AppState["llmSettings"]>) => {
+      const mergedSettings = {
+        correctionStyle: storeState.correctionStyle,
+        rpgTheme: storeState.rpgTheme,
+        learningGoal: storeState.learningGoal,
+        narratorPersona: storeState.narratorPersona,
+        ...storeState.llmSettings,
+        ...next,
+      };
+      updateStoreWith((prev) => ({
+        ...prev,
+        llmSettings: mergedSettings,
+        correctionStyle: mergedSettings.correctionStyle ?? prev.correctionStyle,
+        rpgTheme: mergedSettings.rpgTheme ?? prev.rpgTheme,
+        learningGoal: mergedSettings.learningGoal ?? prev.learningGoal,
+        narratorPersona: mergedSettings.narratorPersona ?? prev.narratorPersona,
+      }));
+      const userId = storeState.user?.id;
+      if (userId && !isHydrating.current) {
+        void upsertLlmSettings(supabase, userId, mergedSettings).catch(
+          (error) => {
+            console.warn("Failed to persist LLM settings", error);
+          }
+        );
+      }
+    },
+    [supabase]
+  );
 
   const updateCharacter = useCallback(
     (next: Partial<AppState["character"]>) => {
@@ -343,7 +395,15 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
 
   const resetConversation = useCallback(() => {
     const user = storeState.user;
-    updateStore({ ...defaultState, user });
+    updateStore({
+      ...defaultState,
+      user,
+      correctionStyle: storeState.correctionStyle,
+      rpgTheme: storeState.rpgTheme,
+      learningGoal: storeState.learningGoal,
+      narratorPersona: storeState.narratorPersona,
+      llmSettings: storeState.llmSettings,
+    });
     if (user && !isHydrating.current) {
       void clearMessagesStore(supabase, user.id).catch((error) => {
         console.warn("Failed to clear messages", error);
@@ -359,6 +419,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       state,
       updateState,
       updateCharacter,
+      updateLlmSettings,
       addMessage,
       removeMessageAt,
       persistPendingMessages,
@@ -370,6 +431,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       state,
       updateState,
       updateCharacter,
+      updateLlmSettings,
       addMessage,
       removeMessageAt,
       persistPendingMessages,

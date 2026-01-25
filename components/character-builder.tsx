@@ -6,7 +6,14 @@ import { useLabels } from "@/components/language-label";
 import { getBrowserRuntime } from "@/lib/browser-runtime";
 import { getEventTargetValue } from "@/lib/dom";
 
-const QUESTION_IDS = ["theme", "motivation", "strengths", "flaws", "role"] as const;
+const QUESTION_IDS = [
+  "voiceOrigin",
+  "motivation",
+  "strengths",
+  "flaws",
+  "driver",
+  "startingTrinket",
+] as const;
 
 type Answers = Record<(typeof QUESTION_IDS)[number], string>;
 
@@ -26,11 +33,12 @@ export function CharacterBuilder() {
   const [showQuestionnaire, setShowQuestionnaire] = useState(false);
   const questions = useMemo<{ id: keyof Answers; label: string }[]>(
     () => [
-      { id: "theme", label: labels.characterQuestionTheme },
+      { id: "voiceOrigin", label: labels.characterQuestionVoiceOrigin },
       { id: "motivation", label: labels.characterQuestionMotivation },
       { id: "strengths", label: labels.characterQuestionStrengths },
       { id: "flaws", label: labels.characterQuestionFlaws },
-      { id: "role", label: labels.characterQuestionRole },
+      { id: "driver", label: labels.characterQuestionDriver },
+      { id: "startingTrinket", label: labels.characterQuestionStartingTrinket },
     ],
     [labels]
   );
@@ -120,7 +128,7 @@ export function CharacterBuilder() {
               <label htmlFor={`character-${question.id}`}>{question.label}</label>
                 <input
                   id={`character-${question.id}`}
-                  value={answers[question.id]}
+                  value={answers[question.id] ?? ""}
                   onChange={(event) => {
                     updateAnswer(question.id, getEventTargetValue(event.target));
                   }}
