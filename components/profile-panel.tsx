@@ -46,6 +46,16 @@ export function ProfilePanel() {
         }}
         disabled={!isAuthenticated}
       />
+      <label htmlFor="character-weakness">{labels.characterFieldWeakness}</label>
+      <input
+        id="character-weakness"
+        placeholder={labels.characterPlaceholderWeakness}
+        value={state.character.weakness || ""}
+        onChange={(event) => {
+          updateCharacter({ weakness: getEventTargetValue(event.target) });
+        }}
+        disabled={!isAuthenticated}
+      />
       <label htmlFor="character-stats">{labels.characterFieldStats}</label>
       <textarea
         id="character-stats"
@@ -54,16 +64,6 @@ export function ProfilePanel() {
         value={state.character.stats || ""}
         onChange={(event) => {
           updateCharacter({ stats: getEventTargetValue(event.target) });
-        }}
-        disabled={!isAuthenticated}
-      />
-      <label htmlFor="character-weakness">{labels.characterFieldWeakness}</label>
-      <input
-        id="character-weakness"
-        placeholder={labels.characterPlaceholderWeakness}
-        value={state.character.weakness || ""}
-        onChange={(event) => {
-          updateCharacter({ weakness: getEventTargetValue(event.target) });
         }}
         disabled={!isAuthenticated}
       />
