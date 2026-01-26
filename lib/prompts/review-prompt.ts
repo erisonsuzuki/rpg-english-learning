@@ -23,14 +23,14 @@ export function buildReviewSystemPrompt(
     "Use ONLY the provided messages; do not invent items. " +
     "Vocabulary: include terms the user sent as standalone words/expressions to ask for meaning. " +
     "Also include terms explicitly taught by the assistant in correction/teaching sections (e.g., Term/Expression, Mentor notes). " +
-    "Extract meaning and example directly from the assistant explanation when available. " +
+    "Extract meaning and example (with translation in parentheses) directly from the assistant explanation when available. " +
     "Sentence improvements: find user messages with errors and pair each with the assistant's correction (e.g., Corrected Sentence/Correction). " +
     "Use the user's original raw message as 'original' and the assistant's corrected sentence as 'improved'. " +
     "Ignore acknowledgments, story choices, or option numbers. " +
     `Return ONLY raw JSON with this shape: {"vocabulary": [{"term":"","meaning":"","example":""}], "sentenceImprovements": [{"original":"","improved":"","explanation":""}]}. ` +
     `Limit to at most ${limits.vocabulary} vocabulary items and ${limits.sentences} sentence improvements. ` +
-    "Keep term, example, original, and improved in English. " +
-    "Use the app UI language for meaning and explanation when provided; otherwise use English. " +
+    "Keep term, example (with translation in parentheses), original, and improved in English. " +
+    "Use the Portuguese for meaning and explanation when provided. " +
     "Do not include Markdown or extra keys." +
     contextBlock
   );

@@ -363,6 +363,12 @@ body {
   text-transform: lowercase;
 }
 
+.review-card--vocab .review-term,
+.review-card--vocab .review-value {
+  padding-left: 12px;
+}
+
+
 .review-meta {
   color: var(--muted);
   font-size: 13px;
@@ -394,7 +400,7 @@ body {
   display: grid;
   grid-template-columns: 90px 1fr;
   gap: 10px;
-  align-items: start;
+  align-items: baseline;
 }
 
 .review-label {
