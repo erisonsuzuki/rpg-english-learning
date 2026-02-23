@@ -10,6 +10,7 @@ import {
   useSyncExternalStore,
 } from "react";
 import type { AppState } from "@/lib/app-state";
+import type { AppSettings } from "@/lib/types";
 import { getBrowserRuntime } from "@/lib/browser-runtime";
 import { defaultState } from "@/lib/defaults";
 import { getSupabaseBrowserClient } from "@/utils/supabase/client";
@@ -30,11 +31,16 @@ import {
   fetchLlmSettings,
   upsertLlmSettings,
 } from "@/lib/supabase/llm-settings";
+import {
+  fetchAppSettings,
+  upsertAppSettings,
+} from "@/lib/supabase/app-settings";
 
 type AppStateContextValue = {
   state: AppState;
   updateState: (next: Partial<AppState>) => void;
   updateCharacter: (next: Partial<AppState["character"]>) => void;
+  updateAppSettings: (next: Partial<AppSettings>) => void;
   updateLlmSettings: (next: Partial<AppState["llmSettings"]>) => void;
   addMessage: (
     message: AppState["messages"][number],
@@ -89,20 +95,25 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     async (userId: string) => {
       isHydrating.current = true;
       try {
-        const [character, messages, settings] = await Promise.all([
+        const [character, messages, llmSettings, appSettings] = await Promise.all([
           fetchCharacter(supabase, userId),
           fetchMessages(supabase, userId, { limit: MESSAGE_PAGE_SIZE + 1 }),
           fetchLlmSettings(supabase, userId),
+          fetchAppSettings(supabase, userId),
         ]);
         const slicedMessages = (messages ?? []).slice(0, MESSAGE_PAGE_SIZE);
         updateStoreWith((prev) => ({
           ...prev,
           character: character ?? defaultState.character,
-          llmSettings: settings ?? prev.llmSettings,
-          correctionStyle: settings?.correctionStyle ?? prev.correctionStyle,
-          rpgTheme: settings?.rpgTheme ?? prev.rpgTheme,
-          learningGoal: settings?.learningGoal ?? prev.learningGoal,
-          narratorPersona: settings?.narratorPersona ?? prev.narratorPersona,
+          llmSettings: llmSettings ?? prev.llmSettings,
+          correctionStyle: llmSettings?.correctionStyle ?? prev.correctionStyle,
+          rpgTheme: llmSettings?.rpgTheme ?? prev.rpgTheme,
+          learningGoal: llmSettings?.learningGoal ?? prev.learningGoal,
+          narratorPersona: llmSettings?.narratorPersona ?? prev.narratorPersona,
+          level: appSettings?.level ?? prev.level,
+          uiLanguage: appSettings?.uiLanguage ?? prev.uiLanguage,
+          theme: appSettings?.theme ?? prev.theme,
+          textSize: appSettings?.textSize ?? prev.textSize,
           messages: slicedMessages,
           hasMoreMessages: (messages ?? []).length > MESSAGE_PAGE_SIZE,
         }));
@@ -160,6 +171,10 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
           narratorPersona: shouldReset
             ? defaultState.narratorPersona
             : prev.narratorPersona,
+          level: shouldReset ? defaultState.level : prev.level,
+          uiLanguage: shouldReset ? defaultState.uiLanguage : prev.uiLanguage,
+          theme: shouldReset ? defaultState.theme : prev.theme,
+          textSize: shouldReset ? defaultState.textSize : prev.textSize,
           messages: shouldReset ? [] : prev.messages,
           hasMoreMessages: shouldReset ? false : prev.hasMoreMessages,
         }));
@@ -184,6 +199,34 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const updateState = useCallback((next: Partial<AppState>) => {
     updateStoreWith((prev) => ({ ...prev, ...next }));
   }, []);
+
+  const updateAppSettings = useCallback(
+    (next: Partial<AppSettings>) => {
+      const mergedSettings = {
+        level: storeState.level,
+        uiLanguage: storeState.uiLanguage,
+        theme: storeState.theme,
+        textSize: storeState.textSize,
+        ...next,
+      };
+      updateStoreWith((prev) => ({
+        ...prev,
+        level: mergedSettings.level ?? prev.level,
+        uiLanguage: mergedSettings.uiLanguage ?? prev.uiLanguage,
+        theme: mergedSettings.theme ?? prev.theme,
+        textSize: mergedSettings.textSize ?? prev.textSize,
+      }));
+      const userId = storeState.user?.id;
+      if (userId && !isHydrating.current) {
+        void upsertAppSettings(supabase, userId, mergedSettings).catch(
+          (error) => {
+            console.warn("Failed to persist app settings", error);
+          }
+        );
+      }
+    },
+    [supabase]
+  );
 
   const updateLlmSettings = useCallback(
     (next: Partial<AppState["llmSettings"]>) => {
@@ -419,6 +462,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       state,
       updateState,
       updateCharacter,
+      updateAppSettings,
       updateLlmSettings,
       addMessage,
       removeMessageAt,
@@ -431,6 +475,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       state,
       updateState,
       updateCharacter,
+      updateAppSettings,
       updateLlmSettings,
       addMessage,
       removeMessageAt,

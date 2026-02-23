@@ -2,6 +2,7 @@
 
 import type { ChangeEvent } from "react";
 import type { AppState } from "@/lib/app-state";
+import type { AppSettings } from "@/lib/types";
 import { useCallback, useEffect, useMemo } from "react";
 import { parseAsStringLiteral, useQueryState } from "nuqs";
 import { useAppState } from "@/components/app-state";
@@ -30,7 +31,8 @@ const themeParser = parseAsStringLiteral(THEMES);
 const textSizeParser = parseAsStringLiteral(TEXT_SIZES);
 
 export function SettingsPanel() {
-  const { state, updateState, updateLlmSettings, resetConversation } = useAppState();
+  const { state, updateAppSettings, updateLlmSettings, resetConversation } =
+    useAppState();
   const labels = useLabels();
   const supabase = useMemo(() => getSupabaseBrowserClient(), []);
   const [levelQuery, setLevelQuery] = useQueryState("level", levelParser);
@@ -50,19 +52,19 @@ export function SettingsPanel() {
     await supabase.auth.signOut();
   };
 
-  const updateStateWithVersionCheck = useCallback(
-    (next: Partial<typeof state>) => {
-      updateState(next);
+  const updateAppSettingsWithVersionCheck = useCallback(
+    (next: Partial<AppSettings>) => {
+      updateAppSettings(next);
       getBrowserRuntime().dispatchEvent?.(new Event("app:check-version"));
     },
-    [updateState]
+    [updateAppSettings]
   );
 
   const handleLevelChange = (event: ChangeEvent<HTMLSelectElement>) => {
     const nextLevel = (getEventTargetValue(event.target) || state.level) as (
       typeof LEVELS
     )[number];
-    updateStateWithVersionCheck({ level: nextLevel });
+    updateAppSettingsWithVersionCheck({ level: nextLevel });
     void setLevelQuery(nextLevel);
   };
 
@@ -70,7 +72,7 @@ export function SettingsPanel() {
     const nextLang = (getEventTargetValue(event.target) || state.uiLanguage) as (
       typeof LANGUAGES
     )[number];
-    updateStateWithVersionCheck({ uiLanguage: nextLang });
+    updateAppSettingsWithVersionCheck({ uiLanguage: nextLang });
     void setLanguageQuery(nextLang);
   };
 
@@ -78,7 +80,7 @@ export function SettingsPanel() {
     const nextTheme = (getEventTargetValue(event.target) || state.theme) as (
       typeof THEMES
     )[number];
-    updateStateWithVersionCheck({ theme: nextTheme });
+    updateAppSettingsWithVersionCheck({ theme: nextTheme });
     void setThemeQuery(nextTheme);
   };
 
@@ -86,7 +88,7 @@ export function SettingsPanel() {
     const nextSize = (
       getEventTargetValue(event.target) || state.textSize
     ) as (typeof TEXT_SIZES)[number];
-    updateStateWithVersionCheck({ textSize: nextSize });
+    updateAppSettingsWithVersionCheck({ textSize: nextSize });
     void setTextSizeQuery(nextSize);
   };
 
@@ -123,27 +125,27 @@ export function SettingsPanel() {
 
   useEffect(() => {
     if (levelQuery && levelQuery !== state.level) {
-      updateStateWithVersionCheck({ level: levelQuery });
+      updateAppSettingsWithVersionCheck({ level: levelQuery });
     }
-  }, [levelQuery, state.level, updateStateWithVersionCheck]);
+  }, [levelQuery, state.level, updateAppSettingsWithVersionCheck]);
 
   useEffect(() => {
     if (languageQuery && languageQuery !== state.uiLanguage) {
-      updateStateWithVersionCheck({ uiLanguage: languageQuery });
+      updateAppSettingsWithVersionCheck({ uiLanguage: languageQuery });
     }
-  }, [languageQuery, state.uiLanguage, updateStateWithVersionCheck]);
+  }, [languageQuery, state.uiLanguage, updateAppSettingsWithVersionCheck]);
 
   useEffect(() => {
     if (themeQuery && themeQuery !== state.theme) {
-      updateStateWithVersionCheck({ theme: themeQuery });
+      updateAppSettingsWithVersionCheck({ theme: themeQuery });
     }
-  }, [themeQuery, state.theme, updateStateWithVersionCheck]);
+  }, [themeQuery, state.theme, updateAppSettingsWithVersionCheck]);
 
   useEffect(() => {
     if (textSizeQuery && textSizeQuery !== state.textSize) {
-      updateStateWithVersionCheck({ textSize: textSizeQuery });
+      updateAppSettingsWithVersionCheck({ textSize: textSizeQuery });
     }
-  }, [textSizeQuery, state.textSize, updateStateWithVersionCheck]);
+  }, [textSizeQuery, state.textSize, updateAppSettingsWithVersionCheck]);
 
   return (
     <section className="panel">
