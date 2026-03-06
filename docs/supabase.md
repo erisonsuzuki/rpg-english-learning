@@ -38,6 +38,24 @@ create table public.llm_settings (
   unique (user_id)
 );
 
+create table public.user_settings (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  level text,
+  ui_language text,
+  theme text,
+  text_size text,
+  correction_style text,
+  rpg_theme text,
+  learning_goal text,
+  narrator_persona text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (user_id)
+);
+
+-- user_settings has check constraints for allowed values and rpg_theme length.
+
 create index chat_messages_user_id_created_at_idx
 on public.chat_messages (user_id, created_at);
 
@@ -47,9 +65,13 @@ on public.characters (user_id);
 create index llm_settings_user_id_idx
 on public.llm_settings (user_id);
 
+create index user_settings_user_id_idx
+on public.user_settings (user_id);
+
 alter table public.characters enable row level security;
 alter table public.chat_messages enable row level security;
 alter table public.llm_settings enable row level security;
+alter table public.user_settings enable row level security;
 
 create policy "read own character"
 on public.characters
@@ -79,6 +101,28 @@ with check (auth.uid() = user_id);
 create policy "update own llm settings"
 on public.llm_settings
 for update
+using (auth.uid() = user_id)
+with check (auth.uid() = user_id);
+
+create policy "read own user settings"
+on public.user_settings
+for select
+using (auth.uid() = user_id);
+
+create policy "insert own user settings"
+on public.user_settings
+for insert
+with check (auth.uid() = user_id);
+
+create policy "update own user settings"
+on public.user_settings
+for update
+using (auth.uid() = user_id)
+with check (auth.uid() = user_id);
+
+create policy "delete own user settings"
+on public.user_settings
+for delete
 using (auth.uid() = user_id);
 
 create policy "read own messages"

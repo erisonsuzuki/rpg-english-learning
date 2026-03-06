@@ -30,7 +30,8 @@ const themeParser = parseAsStringLiteral(THEMES);
 const textSizeParser = parseAsStringLiteral(TEXT_SIZES);
 
 export function SettingsPanel() {
-  const { state, updateState, updateLlmSettings, resetConversation } = useAppState();
+  const { state, updateState, updateLlmSettings, resetConversation } =
+    useAppState();
   const labels = useLabels();
   const supabase = useMemo(() => getSupabaseBrowserClient(), []);
   const [levelQuery, setLevelQuery] = useQueryState("level", levelParser);
@@ -122,28 +123,38 @@ export function SettingsPanel() {
   };
 
   useEffect(() => {
-    if (levelQuery && levelQuery !== state.level) {
+    if (!isAuthenticated && levelQuery && levelQuery !== state.level) {
       updateStateWithVersionCheck({ level: levelQuery });
     }
-  }, [levelQuery, state.level, updateStateWithVersionCheck]);
+  }, [isAuthenticated, levelQuery, state.level, updateStateWithVersionCheck]);
 
   useEffect(() => {
-    if (languageQuery && languageQuery !== state.uiLanguage) {
+    if (!isAuthenticated && languageQuery && languageQuery !== state.uiLanguage) {
       updateStateWithVersionCheck({ uiLanguage: languageQuery });
     }
-  }, [languageQuery, state.uiLanguage, updateStateWithVersionCheck]);
+  }, [
+    isAuthenticated,
+    languageQuery,
+    state.uiLanguage,
+    updateStateWithVersionCheck,
+  ]);
 
   useEffect(() => {
-    if (themeQuery && themeQuery !== state.theme) {
+    if (!isAuthenticated && themeQuery && themeQuery !== state.theme) {
       updateStateWithVersionCheck({ theme: themeQuery });
     }
-  }, [themeQuery, state.theme, updateStateWithVersionCheck]);
+  }, [isAuthenticated, themeQuery, state.theme, updateStateWithVersionCheck]);
 
   useEffect(() => {
-    if (textSizeQuery && textSizeQuery !== state.textSize) {
+    if (!isAuthenticated && textSizeQuery && textSizeQuery !== state.textSize) {
       updateStateWithVersionCheck({ textSize: textSizeQuery });
     }
-  }, [textSizeQuery, state.textSize, updateStateWithVersionCheck]);
+  }, [
+    isAuthenticated,
+    textSizeQuery,
+    state.textSize,
+    updateStateWithVersionCheck,
+  ]);
 
   return (
     <section className="panel">
