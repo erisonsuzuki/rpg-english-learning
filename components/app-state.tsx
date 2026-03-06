@@ -10,6 +10,7 @@ import {
   useSyncExternalStore,
 } from "react";
 import type { AppState } from "@/lib/app-state";
+import type { UserSettings } from "@/lib/types";
 import { getBrowserRuntime } from "@/lib/browser-runtime";
 import { defaultState } from "@/lib/defaults";
 import { getSupabaseBrowserClient } from "@/utils/supabase/client";
@@ -27,9 +28,9 @@ import {
   upsertCharacter,
 } from "@/lib/supabase/character";
 import {
-  fetchLlmSettings,
-  upsertLlmSettings,
-} from "@/lib/supabase/llm-settings";
+  fetchUserSettings,
+  upsertUserSettings,
+} from "@/lib/supabase/user-settings";
 
 type AppStateContextValue = {
   state: AppState;
@@ -83,7 +84,46 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const state = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
   const hasHydrated = useRef(false);
   const isHydrating = useRef(false);
+  const settingsPersistTimeout = useRef<ReturnType<typeof setTimeout> | null>(
+    null
+  );
+  const pendingSettings = useRef<UserSettings | null>(null);
   const supabase = useMemo(() => getSupabaseBrowserClient(), []);
+
+  const getUserSettingsSnapshot = useCallback((): UserSettings => {
+    return {
+      level: storeState.level,
+      uiLanguage: storeState.uiLanguage,
+      theme: storeState.theme,
+      textSize: storeState.textSize,
+      correctionStyle: storeState.correctionStyle,
+      rpgTheme: storeState.rpgTheme,
+      learningGoal: storeState.learningGoal,
+      narratorPersona: storeState.narratorPersona,
+    };
+  }, []);
+
+  const scheduleSettingsPersist = useCallback(
+    (settings: UserSettings) => {
+      const userId = storeState.user?.id;
+      if (!userId || isHydrating.current) return;
+      pendingSettings.current = settings;
+      if (settingsPersistTimeout.current) {
+        clearTimeout(settingsPersistTimeout.current);
+      }
+      settingsPersistTimeout.current = setTimeout(() => {
+        const activeUserId = storeState.user?.id;
+        const nextSettings = pendingSettings.current;
+        if (!activeUserId || activeUserId !== userId || !nextSettings) return;
+        void upsertUserSettings(supabase, activeUserId, nextSettings).catch(
+          (error) => {
+            console.warn("Failed to persist user settings", error);
+          }
+        );
+      }, 500);
+    },
+    [supabase]
+  );
 
   const hydrateUserData = useCallback(
     async (userId: string) => {
@@ -92,13 +132,24 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         const [character, messages, settings] = await Promise.all([
           fetchCharacter(supabase, userId),
           fetchMessages(supabase, userId, { limit: MESSAGE_PAGE_SIZE + 1 }),
-          fetchLlmSettings(supabase, userId),
+          fetchUserSettings(supabase, userId),
         ]);
         const slicedMessages = (messages ?? []).slice(0, MESSAGE_PAGE_SIZE);
         updateStoreWith((prev) => ({
           ...prev,
           character: character ?? defaultState.character,
-          llmSettings: settings ?? prev.llmSettings,
+          level: settings?.level ?? prev.level,
+          uiLanguage: settings?.uiLanguage ?? prev.uiLanguage,
+          theme: settings?.theme ?? prev.theme,
+          textSize: settings?.textSize ?? prev.textSize,
+          llmSettings: settings
+            ? {
+                correctionStyle: settings.correctionStyle,
+                rpgTheme: settings.rpgTheme,
+                learningGoal: settings.learningGoal,
+                narratorPersona: settings.narratorPersona,
+              }
+            : prev.llmSettings,
           correctionStyle: settings?.correctionStyle ?? prev.correctionStyle,
           rpgTheme: settings?.rpgTheme ?? prev.rpgTheme,
           learningGoal: settings?.learningGoal ?? prev.learningGoal,
@@ -145,11 +196,20 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         const previousUserId = storeState.user?.id;
         const nextUserId = user?.id;
         const shouldReset = previousUserId !== nextUserId;
+        if (shouldReset && settingsPersistTimeout.current) {
+          clearTimeout(settingsPersistTimeout.current);
+          settingsPersistTimeout.current = null;
+          pendingSettings.current = null;
+        }
         updateStoreWith((prev) => ({
           ...prev,
           user,
           character: shouldReset ? defaultState.character : prev.character,
           llmSettings: shouldReset ? defaultState.llmSettings : prev.llmSettings,
+          level: shouldReset ? defaultState.level : prev.level,
+          uiLanguage: shouldReset ? defaultState.uiLanguage : prev.uiLanguage,
+          theme: shouldReset ? defaultState.theme : prev.theme,
+          textSize: shouldReset ? defaultState.textSize : prev.textSize,
           correctionStyle: shouldReset
             ? defaultState.correctionStyle
             : prev.correctionStyle,
@@ -181,9 +241,24 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     }
   }, [state.theme]);
 
-  const updateState = useCallback((next: Partial<AppState>) => {
-    updateStoreWith((prev) => ({ ...prev, ...next }));
-  }, []);
+  const updateState = useCallback(
+    (next: Partial<AppState>) => {
+      updateStoreWith((prev) => ({ ...prev, ...next }));
+      const shouldPersistSettings =
+        "level" in next ||
+        "uiLanguage" in next ||
+        "theme" in next ||
+        "textSize" in next ||
+        "correctionStyle" in next ||
+        "rpgTheme" in next ||
+        "learningGoal" in next ||
+        "narratorPersona" in next;
+      if (shouldPersistSettings) {
+        scheduleSettingsPersist(getUserSettingsSnapshot());
+      }
+    },
+    [getUserSettingsSnapshot, scheduleSettingsPersist]
+  );
 
   const updateLlmSettings = useCallback(
     (next: Partial<AppState["llmSettings"]>) => {
@@ -203,16 +278,9 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         learningGoal: mergedSettings.learningGoal ?? prev.learningGoal,
         narratorPersona: mergedSettings.narratorPersona ?? prev.narratorPersona,
       }));
-      const userId = storeState.user?.id;
-      if (userId && !isHydrating.current) {
-        void upsertLlmSettings(supabase, userId, mergedSettings).catch(
-          (error) => {
-            console.warn("Failed to persist LLM settings", error);
-          }
-        );
-      }
+      scheduleSettingsPersist(getUserSettingsSnapshot());
     },
-    [supabase]
+    [getUserSettingsSnapshot, scheduleSettingsPersist]
   );
 
   const updateCharacter = useCallback(
@@ -398,6 +466,10 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     updateStore({
       ...defaultState,
       user,
+      level: storeState.level,
+      uiLanguage: storeState.uiLanguage,
+      theme: storeState.theme,
+      textSize: storeState.textSize,
       correctionStyle: storeState.correctionStyle,
       rpgTheme: storeState.rpgTheme,
       learningGoal: storeState.learningGoal,

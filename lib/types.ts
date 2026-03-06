@@ -16,6 +16,17 @@ export type LlmSettings = {
   narratorPersona?: string;
 };
 
+export type UserSettings = {
+  level: string;
+  uiLanguage: string;
+  theme: "light" | "dark";
+  textSize: "small" | "medium" | "large";
+  correctionStyle: string;
+  rpgTheme: string;
+  learningGoal: string;
+  narratorPersona: string;
+};
+
 export type CharacterProfile = {
   name?: string;
   class?: string;
