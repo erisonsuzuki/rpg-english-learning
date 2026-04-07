@@ -37,7 +37,7 @@ GROQ_MODEL=openai/gpt-oss-20b
 NEMOTRON_MODEL=nvidia/nemotron-3-nano-30b-a3b
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_supabase_publishable_key
-NEXT_PUBLIC_SITE_URL=https://rpg-english-learning.onrender.com
+NEXT_PUBLIC_SITE_URL=https://your-app-url.back4app.io
 ```
 
 Optional overrides:
@@ -54,6 +54,22 @@ make start
 - `make stop` - stop the dev server
 - `make lint` - run ESLint
 - `make test` - run unit tests (Vitest)
+
+Local container validation:
+```bash
+docker build -t rpg-english-learning:back4app \
+  --build-arg NEXT_PUBLIC_SUPABASE_URL=your_supabase_url \
+  --build-arg NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_supabase_publishable_key \
+  --build-arg NEXT_PUBLIC_SITE_URL=http://localhost:3000 \
+  .
+docker run --rm -p 3000:3000 \
+  -e GROQ_API_KEY=your_groq_key \
+  -e NVIDIA_API_KEY=your_nvidia_key \
+  -e NEXT_PUBLIC_SUPABASE_URL=your_supabase_url \
+  -e NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_supabase_publishable_key \
+  -e NEXT_PUBLIC_SITE_URL=http://localhost:3000 \
+  rpg-english-learning:back4app
+```
 
 ## Project Structure
 - `app/` - Next.js app router pages and layout
