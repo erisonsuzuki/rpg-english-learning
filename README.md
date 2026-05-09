@@ -77,4 +77,5 @@ make start
 - Errors are surfaced inline in the chat stream or under the character field that triggered them.
 
 ## License
-TBD
+
+Designed by Erison Suzuki. Licensed under the [MIT License](license).
