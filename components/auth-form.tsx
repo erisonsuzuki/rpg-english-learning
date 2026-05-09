@@ -1,10 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
+import { signIn } from "next-auth/react";
 import { useLabels } from "@/components/language-label";
 import { getBrowserRuntime } from "@/lib/browser-runtime";
 import { getEventTargetValue } from "@/lib/dom";
-import { getSupabaseBrowserClient } from "@/utils/supabase/client";
 
 type AuthFormProps = {
   className?: string;
@@ -12,7 +12,6 @@ type AuthFormProps = {
 
 export function AuthForm({ className }: AuthFormProps) {
   const labels = useLabels();
-  const supabase = useMemo(() => getSupabaseBrowserClient(), []);
   const [email, setEmail] = useState("");
   const [authStatus, setAuthStatus] = useState<
     "idle" | "loading" | "sent" | "error"
@@ -26,15 +25,14 @@ export function AuthForm({ className }: AuthFormProps) {
     setAuthError(null);
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
     const redirectUrl = siteUrl || getBrowserRuntime().location?.origin || "";
-    const { error } = await supabase.auth.signInWithOtp({
+    const result = await signIn("email", {
       email: trimmed,
-      options: {
-        emailRedirectTo: redirectUrl,
-      },
+      redirect: false,
+      callbackUrl: redirectUrl,
     });
-    if (error) {
+    if (result?.error) {
       setAuthStatus("error");
-      setAuthError(error.message);
+      setAuthError(result.error);
       return;
     }
     setAuthStatus("sent");

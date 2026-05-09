@@ -2,17 +2,20 @@ import { describe, expect, it, vi } from "vitest";
 import { act, render, screen } from "@testing-library/react";
 import { AppStateProvider, useAppState } from "@/components/app-state";
 
-const mockSupabase = {
-  auth: {
-    getSession: vi.fn().mockResolvedValue({ data: { session: null }, error: null }),
-    onAuthStateChange: vi.fn().mockReturnValue({
-      data: { subscription: { unsubscribe: vi.fn() } },
-    }),
-  },
-};
+vi.mock("next-auth/react", () => ({
+  useSession: () => ({ data: null, status: "unauthenticated" }),
+}));
 
-vi.mock("@/utils/supabase/client", () => ({
-  getSupabaseBrowserClient: () => mockSupabase,
+vi.mock("@/lib/persistence/client", () => ({
+  clearCharacter: vi.fn(),
+  clearMessages: vi.fn(),
+  deleteMessageById: vi.fn(),
+  fetchBootstrap: vi.fn(),
+  fetchMessages: vi.fn(),
+  insertMessage: vi.fn(),
+  insertMessages: vi.fn(),
+  upsertCharacter: vi.fn(),
+  upsertUserSettings: vi.fn(),
 }));
 
 function MessageCount() {

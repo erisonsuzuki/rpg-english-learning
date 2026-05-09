@@ -143,7 +143,7 @@ export default function manifest(): MetadataRoute.Manifest {
 
 ## Notes
 - LLM choice: Groq is recommended as the primary free-tier provider for fast OpenAI-compatible APIs; Nemotron is kept as a fallback option using the NVIDIA endpoint shown in `docs/nvidia_nemotron_usage.md`.
-- Storage: default to local-only for zero-cost operation; optional future sync could use a free tier like Supabase/Firebase if needed.
+- Storage: default to server-side persistence with PostgreSQL for authenticated users.
 - The chat must follow `docs/prompt.md` rules: story in English, teaching in Portuguese, and onboarding intro in Portuguese.
 - Provider adapters will normalize the API: Groq uses a responses-style endpoint, Nemotron uses chat-completions; both return a single assistant text output to the route.
 - A context window limit will keep the story coherent while controlling token usage.

@@ -2,7 +2,8 @@
 
 import type { ChangeEvent } from "react";
 import type { AppState } from "@/lib/app-state";
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect } from "react";
+import { signOut } from "next-auth/react";
 import { parseAsStringLiteral, useQueryState } from "nuqs";
 import { useAppState } from "@/components/app-state";
 import { AuthForm } from "@/components/auth-form";
@@ -10,7 +11,6 @@ import { InstallButton } from "@/components/install-button";
 import { useLabels } from "@/components/language-label";
 import { getBrowserRuntime } from "@/lib/browser-runtime";
 import { getEventTargetValue } from "@/lib/dom";
-import { getSupabaseBrowserClient } from "@/utils/supabase/client";
 
 const LEVELS = ["Beginner", "Intermediate", "Advanced"] as const;
 const LANGUAGES = ["Portuguese", "English"] as const;
@@ -33,7 +33,6 @@ export function SettingsPanel() {
   const { state, updateState, updateLlmSettings, resetConversation } =
     useAppState();
   const labels = useLabels();
-  const supabase = useMemo(() => getSupabaseBrowserClient(), []);
   const [levelQuery, setLevelQuery] = useQueryState("level", levelParser);
   const [languageQuery, setLanguageQuery] = useQueryState(
     "lang",
@@ -48,7 +47,7 @@ export function SettingsPanel() {
   const isAuthenticated = Boolean(state.user);
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
+    await signOut({ callbackUrl: "/settings" });
   };
 
   const updateStateWithVersionCheck = useCallback(

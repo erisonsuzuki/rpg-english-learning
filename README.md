@@ -9,7 +9,7 @@ An installable RPG storytelling app that helps Portuguese-speaking users practic
 - English level selection (Beginner/Intermediate/Advanced)
 - App UI language toggle (Portuguese/English)
 - Dark mode toggle with persistent theme preference
-- Supabase-backed persistence of character and chat history
+- PostgreSQL-backed persistence
 - Magic-link authentication via email
 - Chat starters when history is empty
 - Markdown rendering for chat responses
@@ -35,46 +35,57 @@ GROQ_API_KEY=your_groq_key
 NVIDIA_API_KEY=your_nvidia_key
 GROQ_MODEL=openai/gpt-oss-20b
 NEMOTRON_MODEL=nvidia/nemotron-3-nano-30b-a3b
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_supabase_publishable_key
-NEXT_PUBLIC_SITE_URL=https://your-app-url.back4app.io
+NEXT_PUBLIC_SITE_URL=https://your-app-url.onrender.com
+DATABASE_URL=postgresql://...
+AUTH_SECRET=your_auth_secret
+AUTH_URL=https://your-app-url.onrender.com
+EMAIL_SERVER_HOST=smtp-relay.brevo.com
+EMAIL_SERVER_PORT=587
+EMAIL_SERVER_USER=a0c38f001@smtp-brevo.com
+EMAIL_SERVER_PASSWORD=your_brevo_smtp_key
+EMAIL_FROM=verified-sender@yourdomain.com
 ```
 
 Optional overrides:
 - `GROQ_MODEL`
 - `NEMOTRON_MODEL`
 
-3) Run the dev server:
+`make start` and `make start-docker` automatically start PostgreSQL and apply migrations from `db/migrations/`.
+
+3) Run local development (Next.js on host, PostgreSQL in Docker):
 ```bash
 make start
 ```
 
-## Scripts
-- `make start` - start local dev server
-- `make stop` - stop the dev server
-- `make lint` - run ESLint
-- `make test` - run unit tests (Vitest)
-
-Local container validation:
+4) Run full Docker workflow (PostgreSQL + app container):
 ```bash
-docker build -t rpg-english-learning:back4app \
-  --build-arg NEXT_PUBLIC_SUPABASE_URL=your_supabase_url \
-  --build-arg NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_supabase_publishable_key \
-  --build-arg NEXT_PUBLIC_SITE_URL=http://localhost:3000 \
-  .
-docker run --rm -p 3000:3000 \
-  -e GROQ_API_KEY=your_groq_key \
-  -e NVIDIA_API_KEY=your_nvidia_key \
-  -e NEXT_PUBLIC_SUPABASE_URL=your_supabase_url \
-  -e NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_supabase_publishable_key \
-  -e NEXT_PUBLIC_SITE_URL=http://localhost:3000 \
-  rpg-english-learning:back4app
+make start-docker
 ```
+
+## Make Targets
+- Local workflow:
+  - `make start` - start PostgreSQL container, apply migrations, then run local dev server
+  - `make stop` - stop local dev server
+  - `make lint` - run ESLint on host
+  - `make test` - run unit tests (Vitest) on host
+- Docker/PostgreSQL helpers:
+  - `make postgres-up` - start PostgreSQL container
+  - `make postgres-down` - stop PostgreSQL container
+  - `make postgres-logs` - stream PostgreSQL logs
+  - `make postgres-migrate` - apply SQL migrations to PostgreSQL container
+- Full Docker app workflow:
+  - `make start-docker` - start PostgreSQL, migrate, build image, and run app container
+  - `make stop-docker` - stop app container and PostgreSQL container
+  - `make docker-build` - build app image (`rpg-english-learning:render`)
+  - `make docker-run` - run app container on port `3000`
+  - `make docker-stop` - stop app container
+  - `make lint-docker` - run lint inside app image
+  - `make test-docker` - run tests inside app image
 
 ## Project Structure
 - `app/` - Next.js app router pages and layout
 - `components/` - UI components and app state provider
-- `lib/` - prompt builder, providers, Supabase data helpers, context tools
+- `lib/` - prompt builder, providers, persistence helpers, context tools
 - `docs/` - product and prompt documentation
 - `public/` - static assets (icons, PWA images)
 

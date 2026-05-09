@@ -10,7 +10,7 @@ import { groqChat } from "@/lib/providers/groq";
 import { nemotronChat } from "@/lib/providers/nemotron";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { logLlmRequest, logLlmResponse } from "@/lib/llm-logging";
-import { createSupabaseServerClient } from "@/utils/supabase/server";
+import { requireUser, isUnauthorizedError } from "@/lib/auth/require-user";
 import type { ChatMessage, CharacterProfile } from "@/lib/types";
 
 type CharacterRequest = {
@@ -34,16 +34,9 @@ function parseCharacterProfile(raw: string): CharacterProfile {
 
 export async function POST(req: Request) {
   try {
-    const supabase = await createSupabaseServerClient();
-    const { data, error } = await supabase.auth.getUser();
-    if (error) {
-      console.warn("Failed to read Supabase user", error);
-    }
-    if (!data.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const user = await requireUser();
 
-    const rateLimit = checkRateLimit(data.user.id, 10, 60_000);
+    const rateLimit = checkRateLimit(user.id, 10, 60_000);
     if (!rateLimit.ok) {
       return NextResponse.json(
         { error: "Too many requests" },
@@ -135,6 +128,9 @@ export async function POST(req: Request) {
     }
     return NextResponse.json({ draftCharacter });
   } catch (error) {
+    if (isUnauthorizedError(error)) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json({ error: message }, { status: 502 });
   }

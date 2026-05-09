@@ -1,54 +1,25 @@
 import { describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
+import { signIn } from "next-auth/react";
 import { AuthForm } from "@/components/auth-form";
-import { useAppState } from "@/components/app-state";
-import { getSupabaseBrowserClient } from "@/utils/supabase/client";
 
 vi.mock("@/components/app-state", () => ({
-  useAppState: vi.fn(),
+  useAppState: () => ({
+    state: { uiLanguage: "English" },
+  }),
 }));
 
-vi.mock("@/utils/supabase/client", () => ({
-  getSupabaseBrowserClient: vi.fn(),
+vi.mock("next-auth/react", () => ({
+  signIn: vi.fn(),
 }));
 
-const useAppStateMock = vi.mocked(useAppState);
-const getSupabaseBrowserClientMock = vi.mocked(getSupabaseBrowserClient);
+const signInMock = vi.mocked(signIn);
 
 describe("AuthForm", () => {
   it("submits a magic link and shows confirmation", async () => {
     const previousSiteUrl = process.env.NEXT_PUBLIC_SITE_URL;
     process.env.NEXT_PUBLIC_SITE_URL = "https://rpg-english-learning.onrender.com";
-    const signInWithOtpMock = vi.fn().mockResolvedValue({ error: null });
-    getSupabaseBrowserClientMock.mockReturnValue({
-      auth: { signInWithOtp: signInWithOtpMock },
-    } as unknown as ReturnType<typeof getSupabaseBrowserClient>);
-
-    useAppStateMock.mockReturnValue({
-      state: {
-        character: {},
-        level: "Beginner",
-        uiLanguage: "English",
-        correctionStyle: "Teacher Mode",
-        rpgTheme: "",
-        learningGoal: "Conversation",
-        narratorPersona: "Classic",
-        theme: "light",
-        textSize: "medium",
-        messages: [],
-        hasMoreMessages: false,
-        user: null,
-      },
-      updateState: vi.fn(),
-      updateLlmSettings: vi.fn(),
-      updateCharacter: vi.fn(),
-      addMessage: vi.fn(),
-      removeMessageAt: vi.fn(),
-      persistPendingMessages: vi.fn(),
-      loadMoreMessages: vi.fn(),
-      clearMessages: vi.fn(),
-      resetConversation: vi.fn(),
-    });
+    signInMock.mockResolvedValue({ error: undefined, ok: true, status: 200, url: null });
 
     render(<AuthForm />);
 
@@ -58,11 +29,10 @@ describe("AuthForm", () => {
     fireEvent.click(screen.getByRole("button", { name: "Send magic link" }));
 
     try {
-      expect(signInWithOtpMock).toHaveBeenCalledWith({
+      expect(signInMock).toHaveBeenCalledWith("email", {
         email: "test@example.com",
-        options: {
-          emailRedirectTo: "https://rpg-english-learning.onrender.com",
-        },
+        redirect: false,
+        callbackUrl: "https://rpg-english-learning.onrender.com",
       });
       expect(
         await screen.findByText("Check your inbox to continue. Also check your spam.")
