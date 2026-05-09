@@ -4,7 +4,8 @@ start:
 	npm run dev
 
 stop:
-	npm run stop
+	@lsof -tiTCP:3000 -sTCP:LISTEN | xargs -r kill
+	@rm -f .next/dev/lock
 
 lint:
 	npm run lint
