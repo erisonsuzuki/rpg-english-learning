@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { mapRowToMessage, normalizeMessageOrder } from "@/lib/supabase/messages";
-import { mapRowToCharacter } from "@/lib/supabase/character";
+import {
+  mapRowToMessage,
+  normalizeMessageOrder,
+} from "@/lib/persistence/messages-repo";
+import { mapRowToCharacter } from "@/lib/persistence/character-repo";
 
-describe("Supabase mappers", () => {
+describe("persistence mappers", () => {
   it("maps chat message rows into chat messages", () => {
     const message = mapRowToMessage({
       id: "msg-1",
@@ -11,6 +14,7 @@ describe("Supabase mappers", () => {
       content: "Hello",
       provider: "Groq",
       model: "mixtral",
+      position: 1,
       created_at: "2024-01-01T00:00:00Z",
     });
 
@@ -32,6 +36,7 @@ describe("Supabase mappers", () => {
         content: "Second",
         provider: null,
         model: null,
+        position: 2,
         created_at: "2024-01-02T00:00:00Z",
       },
       {
@@ -41,7 +46,35 @@ describe("Supabase mappers", () => {
         content: "First",
         provider: null,
         model: null,
+        position: 1,
         created_at: "2024-01-01T00:00:00Z",
+      },
+    ]);
+
+    expect(ordered.map((row) => row.id)).toEqual(["msg-1", "msg-2"]);
+  });
+
+  it("normalizes message order by position before timestamp", () => {
+    const ordered = normalizeMessageOrder([
+      {
+        id: "msg-2",
+        user_id: "user-1",
+        role: "assistant",
+        content: "Second",
+        provider: null,
+        model: null,
+        position: 2,
+        created_at: "2024-01-01T00:00:00Z",
+      },
+      {
+        id: "msg-1",
+        user_id: "user-1",
+        role: "user",
+        content: "First",
+        provider: null,
+        model: null,
+        position: 1,
+        created_at: "2024-01-02T00:00:00Z",
       },
     ]);
 

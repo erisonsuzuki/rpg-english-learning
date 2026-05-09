@@ -35,8 +35,14 @@ It summarizes structure, commands, and code style expectations.
 - Required keys:
   - `GROQ_API_KEY`
   - `NVIDIA_API_KEY`
-  - `NEXT_PUBLIC_SUPABASE_URL`
-  - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+  - `DATABASE_URL`
+  - `AUTH_SECRET`
+  - `AUTH_URL`
+  - `EMAIL_SERVER_HOST`
+  - `EMAIL_SERVER_PORT`
+  - `EMAIL_SERVER_USER`
+  - `EMAIL_SERVER_PASSWORD`
+  - `EMAIL_FROM`
 - Optional model overrides:
   - `GROQ_MODEL`
   - `NEMOTRON_MODEL`
@@ -100,9 +106,9 @@ It summarizes structure, commands, and code style expectations.
 - When chat history is empty, show starter suggestions.
 
 ## Storage and Persistence
-- Supabase persists chat messages and character profiles per authenticated user.
-- Keep RLS policies strict to user ownership.
-- Settings remain client-side and reset on refresh.
+- PostgreSQL persists chat messages, character profiles, and user settings per authenticated user.
+- Auth.js handles magic-link authentication and database-backed sessions.
+- Internal API routes must enforce user ownership in all persistence queries.
 
 ## Linting & Quality Checks
 - ESLint is mandatory; keep `npm run lint` green.
