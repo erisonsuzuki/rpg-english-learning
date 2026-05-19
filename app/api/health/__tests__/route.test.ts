@@ -1,0 +1,96 @@
+import { describe, expect, it, vi, beforeEach } from "vitest";
+import { GET } from "@/app/api/health/route";
+import { createSupabaseServerClient } from "@/utils/supabase/server";
+
+vi.mock("@/utils/supabase/server", () => ({
+  createSupabaseServerClient: vi.fn(),
+}));
+
+const createSupabaseServerClientMock = vi.mocked(createSupabaseServerClient);
+
+function createSupabaseStub(error: unknown) {
+  const limit = vi.fn().mockResolvedValue({ error });
+  const select = vi.fn().mockReturnValue({ limit });
+  const from = vi.fn().mockReturnValue({ select });
+
+  return {
+    client: { from },
+    from,
+    select,
+    limit,
+  };
+}
+
+describe("GET /api/health", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("returns ok when database is reachable", async () => {
+    const supabase = createSupabaseStub(null);
+    createSupabaseServerClientMock.mockResolvedValueOnce(supabase.client as never);
+
+    const response = await GET();
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.status).toBe("ok");
+    expect(body.checks.database).toBe("ok");
+    expect(typeof body.timestamp).toBe("string");
+    expect(Number.isNaN(Date.parse(body.timestamp))).toBe(false);
+    expect(response.headers.get("Cache-Control")).toBe("no-store, max-age=0");
+    expect(body.error).toBeUndefined();
+    expect(supabase.from).toHaveBeenCalledWith("chat_messages");
+    expect(supabase.select).toHaveBeenCalledWith("id", { head: true });
+    expect(supabase.limit).toHaveBeenCalledWith(1);
+  });
+
+  it("returns degraded when query fails", async () => {
+    const supabase = createSupabaseStub({ message: "query failed" });
+    createSupabaseServerClientMock.mockResolvedValueOnce(supabase.client as never);
+
+    const response = await GET();
+    const body = await response.json();
+
+    expect(response.status).toBe(503);
+    expect(body.status).toBe("degraded");
+    expect(body.checks.database).toBe("error");
+    expect(body.error).toBe("Database connectivity check failed");
+    expect(typeof body.timestamp).toBe("string");
+    expect(Number.isNaN(Date.parse(body.timestamp))).toBe(false);
+    expect(response.headers.get("Cache-Control")).toBe("no-store, max-age=0");
+  });
+
+  it("returns degraded when client creation throws", async () => {
+    createSupabaseServerClientMock.mockRejectedValueOnce(new Error("missing env"));
+
+    const response = await GET();
+    const body = await response.json();
+
+    expect(response.status).toBe(503);
+    expect(body.status).toBe("degraded");
+    expect(body.checks.database).toBe("error");
+    expect(body.error).toBe("Database connectivity check failed");
+    expect(typeof body.timestamp).toBe("string");
+    expect(Number.isNaN(Date.parse(body.timestamp))).toBe(false);
+    expect(response.headers.get("Cache-Control")).toBe("no-store, max-age=0");
+  });
+
+  it("returns degraded when query execution throws", async () => {
+    const limit = vi.fn().mockRejectedValueOnce(new Error("boom"));
+    const select = vi.fn().mockReturnValue({ limit });
+    const from = vi.fn().mockReturnValue({ select });
+    createSupabaseServerClientMock.mockResolvedValueOnce({ from } as never);
+
+    const response = await GET();
+    const body = await response.json();
+
+    expect(response.status).toBe(503);
+    expect(body.status).toBe("degraded");
+    expect(body.checks.database).toBe("error");
+    expect(body.error).toBe("Database connectivity check failed");
+    expect(typeof body.timestamp).toBe("string");
+    expect(Number.isNaN(Date.parse(body.timestamp))).toBe(false);
+    expect(response.headers.get("Cache-Control")).toBe("no-store, max-age=0");
+  });
+});
