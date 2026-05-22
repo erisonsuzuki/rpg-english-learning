@@ -1,41 +1,58 @@
-import { describe, expect, it } from "vitest";
-import { runWithFallback } from "@/lib/providers/fallback";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { groqChat } from "@/lib/providers/groq";
 
-describe("runWithFallback", () => {
-  it("uses preferred provider first", async () => {
-    const calls: string[] = [];
-    const run = async (provider: "groq" | "nemotron") => {
-      calls.push(provider);
-      return `${provider}-ok`;
-    };
+function makeResponse(status: number, payload: unknown): Response {
+  return new Response(JSON.stringify(payload), {
+    status,
+    headers: { "Content-Type": "application/json" },
+  });
+}
 
-    const result = await runWithFallback(run, "nemotron");
-    expect(result.result).toBe("nemotron-ok");
-    expect(result.provider).toBe("nemotron");
-    expect(calls).toEqual(["nemotron"]);
+describe("groqChat model fallback", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.restoreAllMocks();
   });
 
-  it("falls back when the preferred provider fails", async () => {
-    const calls: string[] = [];
-    const run = async (provider: "groq" | "nemotron") => {
-      calls.push(provider);
-      if (provider === "groq") {
-        throw new Error("Groq failed");
+  it("uses fallback model when primary model fails", async () => {
+    vi.stubEnv("GROQ_API_KEY", "test-key");
+    const fetchMock = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValueOnce(makeResponse(500, { error: "primary failed" }))
+      .mockResolvedValueOnce(
+        makeResponse(200, {
+          choices: [{ message: { content: "fallback output" } }],
+          model: "llama-3.3-70b-versatile",
+        })
+      );
+
+    const result = await groqChat(
+      [{ role: "user", content: "hello" }],
+      {
+        model: "openai/gpt-oss-20b",
+        fallbackModels: ["llama-3.3-70b-versatile"],
       }
-      return "nemotron-ok";
-    };
+    );
 
-    const result = await runWithFallback(run, "groq");
-    expect(result.result).toBe("nemotron-ok");
-    expect(result.provider).toBe("nemotron");
-    expect(calls).toEqual(["groq", "nemotron"]);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(result.content).toBe("fallback output");
+    expect(result.model).toBe("llama-3.3-70b-versatile");
   });
 
-  it("throws when all providers fail", async () => {
-    const run = async () => {
-      throw new Error("All failed");
-    };
+  it("throws when all models fail", async () => {
+    vi.stubEnv("GROQ_API_KEY", "test-key");
+    vi.spyOn(globalThis, "fetch")
+      .mockResolvedValueOnce(makeResponse(500, { error: "primary failed" }))
+      .mockResolvedValueOnce(makeResponse(500, { error: "fallback failed" }));
 
-    await expect(runWithFallback(run, "groq")).rejects.toThrow("All failed");
+    await expect(
+      groqChat(
+        [{ role: "user", content: "hello" }],
+        {
+          model: "openai/gpt-oss-20b",
+          fallbackModels: ["llama-3.3-70b-versatile"],
+        }
+      )
+    ).rejects.toThrow("Groq error: 500");
   });
 });

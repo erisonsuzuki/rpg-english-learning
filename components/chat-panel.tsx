@@ -70,7 +70,6 @@ export function ChatPanel() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          provider: "groq",
           messages: nextMessages,
           character: state.character,
           level: state.level,

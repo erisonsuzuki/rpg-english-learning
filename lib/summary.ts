@@ -1,4 +1,7 @@
-import { groqChat } from "@/lib/providers/groq";
+import {
+  getGroqModelPolicy,
+  groqChat,
+} from "@/lib/providers/groq";
 import type { ChatMessage } from "@/lib/types";
 
 const SUMMARY_THRESHOLD = 18;
@@ -30,7 +33,7 @@ export async function maybeSummarize(
           "Keep it concise and in English.",
       },
       { role: "user" as const, content: summaryPrompt },
-    ]);
+    ], getGroqModelPolicy("summary"));
 
     if (!summary) return messages;
 

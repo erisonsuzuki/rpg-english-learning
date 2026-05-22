@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
 import { buildSystemPrompt } from "@/lib/prompts";
 import { guardChatInput, guardChatOutput } from "@/lib/guardrails";
-import { groqChat } from "@/lib/providers/groq";
-import { nemotronChat } from "@/lib/providers/nemotron";
-import { runWithFallback } from "@/lib/providers/fallback";
+import { getGroqModelPolicy, groqChat } from "@/lib/providers/groq";
 import { trimMessages, trimMessagesByChars } from "@/lib/context";
 import { maybeSummarize } from "@/lib/summary";
 import { checkRateLimit } from "@/lib/rate-limit";
@@ -13,7 +11,6 @@ import type { ChatMessage, PromptContext } from "@/lib/types";
 
 type ChatRequest = PromptContext & {
   messages: ChatMessage[];
-  provider?: "groq" | "nemotron";
 };
 
 export async function POST(req: Request) {
@@ -49,7 +46,6 @@ export async function POST(req: Request) {
       learningGoal,
       narratorPersona,
     } = body;
-    const preferredProvider = body.provider === "nemotron" ? "nemotron" : "groq";
 
     if (!messages?.length) {
       return NextResponse.json(
@@ -101,7 +97,7 @@ export async function POST(req: Request) {
     );
     logLlmRequest({
       feature: "chat",
-      preferredProvider,
+      preferredProvider: "groq",
       messageCount: finalPayload.length,
       originalMessages: payload.length,
       contextChars,
@@ -113,14 +109,10 @@ export async function POST(req: Request) {
       content: message.content,
     }));
 
-    const { result, provider } = await runWithFallback((provider) => {
-      const run = provider === "nemotron" ? nemotronChat : groqChat;
-      return run(providerPayload);
-    }, preferredProvider);
-
+    const result = await groqChat(providerPayload, getGroqModelPolicy("chat"));
     logLlmResponse({
       feature: "chat",
-      provider,
+      provider: "groq",
       model: result.model,
       usage: result.usage,
     });
@@ -136,7 +128,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       output: result.content,
-      provider,
+      provider: "groq",
       model: result.model,
       usage: result.usage,
     });
