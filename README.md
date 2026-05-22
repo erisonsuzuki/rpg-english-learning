@@ -14,7 +14,7 @@ An installable RPG storytelling app that helps Portuguese-speaking users practic
 - Chat starters when history is empty
 - Markdown rendering for chat responses
 - PWA installable shell with service worker caching
-- LLM providers: Groq (primary) and NVIDIA Nemotron (fallback)
+- LLM provider: Groq
 
 ## Tech Stack
 - Next.js (App Router)
@@ -32,9 +32,12 @@ npm install
 2) Add environment variables in `.env.local`:
 ```bash
 GROQ_API_KEY=your_groq_key
-NVIDIA_API_KEY=your_nvidia_key
 GROQ_MODEL=openai/gpt-oss-20b
-NEMOTRON_MODEL=nvidia/nemotron-3-nano-30b-a3b
+GROQ_MODEL_CHAT=openai/gpt-oss-20b
+GROQ_MODEL_CHARACTER=openai/gpt-oss-120b
+GROQ_MODEL_REVIEW=openai/gpt-oss-120b
+GROQ_MODEL_SUMMARY=openai/gpt-oss-120b
+GROQ_MODEL_FALLBACK=llama-3.3-70b-versatile
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_supabase_publishable_key
 NEXT_PUBLIC_SITE_URL=https://your-app-url.io
@@ -42,7 +45,11 @@ NEXT_PUBLIC_SITE_URL=https://your-app-url.io
 
 Optional overrides:
 - `GROQ_MODEL`
-- `NEMOTRON_MODEL`
+- `GROQ_MODEL_CHAT`
+- `GROQ_MODEL_CHARACTER`
+- `GROQ_MODEL_REVIEW`
+- `GROQ_MODEL_SUMMARY`
+- `GROQ_MODEL_FALLBACK`
 
 3) Run the dev server:
 ```bash
@@ -69,7 +76,9 @@ make start
 - Icons: `public/icons/`
 
 ## LLM Notes
-- Groq is the primary provider with Nemotron as fallback.
+- Groq is the only provider.
+- Chat model policy: `openai/gpt-oss-20b` with fallback `llama-3.3-70b-versatile`.
+- Character/review/summary model policy: `openai/gpt-oss-120b` with fallback `llama-3.3-70b-versatile`.
 - The system prompt is built from `docs/prompt.md` plus runtime context.
 - Long chats are summarized and trimmed, with an additional context-size cap to avoid token overflows.
 - Provider/model metadata is logged on the server for debugging.

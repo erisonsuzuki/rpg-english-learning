@@ -5,9 +5,10 @@ import {
   guardCharacterOutput,
   validateCharacterProfile,
 } from "@/lib/guardrails";
-import { runWithFallback } from "@/lib/providers/fallback";
-import { groqChat } from "@/lib/providers/groq";
-import { nemotronChat } from "@/lib/providers/nemotron";
+import {
+  getGroqModelPolicy,
+  groqChat,
+} from "@/lib/providers/groq";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { logLlmRequest, logLlmResponse } from "@/lib/llm-logging";
 import { createSupabaseServerClient } from "@/utils/supabase/server";
@@ -16,7 +17,6 @@ import type { ChatMessage, CharacterProfile } from "@/lib/types";
 type CharacterRequest = {
   answers: Record<string, string>;
   languagePreference?: string;
-  provider?: "groq" | "nemotron";
 };
 
 function parseCharacterProfile(raw: string): CharacterProfile {
@@ -56,7 +56,6 @@ export async function POST(req: Request) {
 
     const body = (await req.json()) as CharacterRequest;
     const { answers, languagePreference } = body;
-    const preferredProvider = body.provider === "nemotron" ? "nemotron" : "groq";
 
     if (!answers || Object.values(answers).every((value) => !value.trim())) {
       return NextResponse.json(
@@ -96,21 +95,17 @@ export async function POST(req: Request) {
     );
     logLlmRequest({
       feature: "character",
-      preferredProvider,
+      preferredProvider: "groq",
       messageCount: messages.length,
       answerCount,
       totalAnswerChars,
       payloadChars,
     });
 
-    const { result, provider } = await runWithFallback((provider) => {
-      const run = provider === "nemotron" ? nemotronChat : groqChat;
-      return run(messages);
-    }, preferredProvider);
-
+    const result = await groqChat(messages, getGroqModelPolicy("character"));
     logLlmResponse({
       feature: "character",
-      provider,
+      provider: "groq",
       model: result.model,
       usage: result.usage,
     });

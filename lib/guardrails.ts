@@ -68,7 +68,8 @@ const SENSITIVE_PATTERNS: GuardrailPattern[] = [
   {
     code: "env-leak",
     message: "Input references runtime environment secrets.",
-    regex: /(GROQ_API_KEY|NVIDIA_API_KEY|NEMOTRON_MODEL|GROQ_MODEL)/i,
+    regex:
+      /(GROQ_API_KEY|GROQ_MODEL|GROQ_MODEL_CHAT|GROQ_MODEL_CHARACTER|GROQ_MODEL_REVIEW|GROQ_MODEL_SUMMARY|GROQ_MODEL_FALLBACK)/i,
   },
   {
     code: "auth-header",

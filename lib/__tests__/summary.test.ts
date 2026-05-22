@@ -2,6 +2,10 @@ import { describe, expect, it, vi } from "vitest";
 
 vi.mock("@/lib/providers/groq", () => ({
   groqChat: vi.fn(),
+  getGroqModelPolicy: vi.fn(() => ({
+    model: "openai/gpt-oss-120b",
+    fallbackModels: ["llama-3.3-70b-versatile"],
+  })),
 }));
 
 import { groqChat } from "@/lib/providers/groq";

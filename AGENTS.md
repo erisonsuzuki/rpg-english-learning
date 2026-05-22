@@ -15,7 +15,7 @@
 - App is a single Next.js App Router project (not a monorepo): UI in `app/` + `components/`, core logic in `lib/`.
 - Real page entry is `app/page.tsx` -> `components/home-content.tsx`; root wrappers are in `app/layout.tsx` (`SerwistClientProvider`, `AppProviders`, header, update banner).
 - Global client state lives in `components/app-state.tsx` with shared types in `lib/types.ts`.
-- LLM endpoints are `app/api/chat/route.ts`, `app/api/character/route.ts`, and `app/api/review/route.ts`; all require authenticated Supabase user, enforce rate limits, and route provider calls via `runWithFallback`.
+- LLM endpoints are `app/api/chat/route.ts`, `app/api/character/route.ts`, and `app/api/review/route.ts`; all require authenticated Supabase user, enforce rate limits, and call Groq directly with model fallback.
 
 ## Prompt/provider invariants
 - Prompt source of truth is `docs/prompt.md`; builders are in `lib/prompts/`.
@@ -23,7 +23,7 @@
 - Keep guardrails wired: `lib/guardrails.ts` is enforced before and/or after model output in API routes.
 
 ## Supabase/auth and env gotchas
-- Required envs used at runtime: `GROQ_API_KEY`, `NVIDIA_API_KEY`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
+- Required envs used at runtime: `GROQ_API_KEY`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
 - Supabase env access throws if missing (`utils/supabase/env.ts`), so tests/features touching auth or persistence fail fast without env.
 - Session refresh runs through `proxy.ts` + `utils/supabase/middleware.ts` (this repo uses `proxy.ts`, not `middleware.ts`).
 

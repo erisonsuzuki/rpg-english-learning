@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
 import { guardChatInput, guardChatOutput } from "@/lib/guardrails";
-import { runWithFallback } from "@/lib/providers/fallback";
-import { groqChat } from "@/lib/providers/groq";
-import { nemotronChat } from "@/lib/providers/nemotron";
+import { getGroqModelPolicy, groqChat } from "@/lib/providers/groq";
 import { trimMessages, trimMessagesByChars } from "@/lib/context";
 import { maybeSummarize } from "@/lib/summary";
 import { checkRateLimit } from "@/lib/rate-limit";
@@ -13,7 +11,6 @@ import { fetchMessages } from "@/lib/supabase/messages";
 import type { ChatMessage, PromptContext, ReviewResult } from "@/lib/types";
 
 type ReviewRequest = PromptContext & {
-  provider?: "groq" | "nemotron";
   messageLimit?: number;
   limits?: {
     vocabulary?: number;
@@ -114,7 +111,6 @@ export async function POST(req: Request) {
       learningGoal,
       narratorPersona,
     } = body;
-    const preferredProvider = body.provider === "nemotron" ? "nemotron" : "groq";
     const limits = {
       vocabulary: clampLimit(
         body.limits?.vocabulary,
@@ -189,7 +185,7 @@ export async function POST(req: Request) {
     );
     logLlmRequest({
       feature: "review",
-      preferredProvider,
+      preferredProvider: "groq",
       messageCount: finalPayload.length,
       originalMessages: payload.length,
       contextChars,
@@ -203,14 +199,10 @@ export async function POST(req: Request) {
       content: message.content,
     }));
 
-    const { result, provider } = await runWithFallback((provider) => {
-      const run = provider === "nemotron" ? nemotronChat : groqChat;
-      return run(providerPayload);
-    }, preferredProvider);
-
+    const result = await groqChat(providerPayload, getGroqModelPolicy("review"));
     logLlmResponse({
       feature: "review",
-      provider,
+      provider: "groq",
       model: result.model,
       usage: result.usage,
     });
@@ -228,7 +220,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       review,
-      provider,
+      provider: "groq",
       model: result.model,
       usage: result.usage,
     });
