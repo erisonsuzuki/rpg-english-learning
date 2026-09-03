@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { act, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { AppStateProvider, useAppState } from "@/components/app-state";
 
 const mockSupabase = {
@@ -41,14 +41,10 @@ describe("removeMessageAt", () => {
       </AppStateProvider>
     );
 
-    act(() => {
-      screen.getByRole("button", { name: "Add" }).click();
-    });
-    expect(screen.getByTestId("count").textContent).toBe("1");
+    fireEvent.click(screen.getByRole("button", { name: "Add" }));
+    expect(screen.getByTestId("count")).toHaveTextContent("1");
 
-    act(() => {
-      screen.getByRole("button", { name: "Remove" }).click();
-    });
-    expect(screen.getByTestId("count").textContent).toBe("0");
+    fireEvent.click(screen.getByRole("button", { name: "Remove" }));
+    expect(screen.getByTestId("count")).toHaveTextContent("0");
   });
 });
