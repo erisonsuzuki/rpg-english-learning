@@ -17,11 +17,12 @@
     "react-dom": "^19.0.0",
     "react-markdown": "^10.1.0",
     "nuqs": "^2.7.0",
-    "@supabase/ssr": "^0.7.0",
-    "@supabase/supabase-js": "^2.49.1"
+    "@supabase/supabase-js": "^2.49.1",
+    "nodemailer": "^9.0.6"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
+    "@types/nodemailer": "^8.0.1",
     "@types/react": "^19.0.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",

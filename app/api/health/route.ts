@@ -11,11 +11,7 @@ export async function GET() {
   const timestamp = new Date().toISOString();
 
   try {
-    const supabase = await createSupabaseServerClient();
-    const { error } = await supabase
-      .from("chat_messages")
-      .select("id", { head: true })
-      .limit(1);
+    const { error } = await createSupabaseServerClient().rpc("app_health");
 
     if (error) {
       return NextResponse.json(

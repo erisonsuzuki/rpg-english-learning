@@ -1,10 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useLabels } from "@/components/language-label";
-import { getBrowserRuntime } from "@/lib/browser-runtime";
 import { getEventTargetValue } from "@/lib/dom";
-import { getSupabaseBrowserClient } from "@/utils/supabase/client";
 
 type AuthFormProps = {
   className?: string;
@@ -12,7 +10,6 @@ type AuthFormProps = {
 
 export function AuthForm({ className }: AuthFormProps) {
   const labels = useLabels();
-  const supabase = useMemo(() => getSupabaseBrowserClient(), []);
   const [email, setEmail] = useState("");
   const [authStatus, setAuthStatus] = useState<
     "idle" | "loading" | "sent" | "error"
@@ -24,17 +21,10 @@ export function AuthForm({ className }: AuthFormProps) {
     if (!trimmed || authStatus === "loading") return;
     setAuthStatus("loading");
     setAuthError(null);
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
-    const redirectUrl = siteUrl || getBrowserRuntime().location?.origin || "";
-    const { error } = await supabase.auth.signInWithOtp({
-      email: trimmed,
-      options: {
-        emailRedirectTo: redirectUrl,
-      },
-    });
-    if (error) {
+    const response = await fetch("/api/auth/request", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: trimmed }) });
+    if (!response.ok) {
       setAuthStatus("error");
-      setAuthError(error.message);
+      setAuthError("Não foi possível solicitar o link. Tente novamente.");
       return;
     }
     setAuthStatus("sent");

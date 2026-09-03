@@ -2,27 +2,17 @@ import { describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { AuthForm } from "@/components/auth-form";
 import { useAppState } from "@/components/app-state";
-import { getSupabaseBrowserClient } from "@/utils/supabase/client";
 
 vi.mock("@/components/app-state", () => ({
   useAppState: vi.fn(),
 }));
 
-vi.mock("@/utils/supabase/client", () => ({
-  getSupabaseBrowserClient: vi.fn(),
-}));
-
 const useAppStateMock = vi.mocked(useAppState);
-const getSupabaseBrowserClientMock = vi.mocked(getSupabaseBrowserClient);
 
 describe("AuthForm", () => {
   it("submits a magic link and shows confirmation", async () => {
-    const previousSiteUrl = process.env.NEXT_PUBLIC_SITE_URL;
-    process.env.NEXT_PUBLIC_SITE_URL = "https://rpg-english-learning.onrender.com";
-    const signInWithOtpMock = vi.fn().mockResolvedValue({ error: null });
-    getSupabaseBrowserClientMock.mockReturnValue({
-      auth: { signInWithOtp: signInWithOtpMock },
-    } as unknown as ReturnType<typeof getSupabaseBrowserClient>);
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true });
+    vi.stubGlobal("fetch", fetchMock);
 
     useAppStateMock.mockReturnValue({
       state: {
@@ -58,17 +48,15 @@ describe("AuthForm", () => {
     fireEvent.click(screen.getByRole("button", { name: "Send magic link" }));
 
     try {
-      expect(signInWithOtpMock).toHaveBeenCalledWith({
-        email: "test@example.com",
-        options: {
-          emailRedirectTo: "https://rpg-english-learning.onrender.com",
-        },
-      });
+      expect(fetchMock).toHaveBeenCalledWith("/api/auth/request", expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({ email: "test@example.com" }),
+      }));
       expect(
         await screen.findByText("Check your inbox to continue. Also check your spam.")
       ).toBeTruthy();
     } finally {
-      process.env.NEXT_PUBLIC_SITE_URL = previousSiteUrl;
+      vi.unstubAllGlobals();
     }
   });
 });
