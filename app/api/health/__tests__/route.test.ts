@@ -9,15 +9,11 @@ vi.mock("@/utils/supabase/server", () => ({
 const createSupabaseServerClientMock = vi.mocked(createSupabaseServerClient);
 
 function createSupabaseStub(error: unknown) {
-  const limit = vi.fn().mockResolvedValue({ error });
-  const select = vi.fn().mockReturnValue({ limit });
-  const from = vi.fn().mockReturnValue({ select });
+  const rpc = vi.fn().mockResolvedValue({ error });
 
   return {
-    client: { from },
-    from,
-    select,
-    limit,
+    client: { rpc },
+    rpc,
   };
 }
 
@@ -28,7 +24,7 @@ describe("GET /api/health", () => {
 
   it("returns ok when database is reachable", async () => {
     const supabase = createSupabaseStub(null);
-    createSupabaseServerClientMock.mockResolvedValueOnce(supabase.client as never);
+    createSupabaseServerClientMock.mockReturnValueOnce(supabase.client as never);
 
     const response = await GET();
     const body = await response.json();
@@ -40,14 +36,12 @@ describe("GET /api/health", () => {
     expect(Number.isNaN(Date.parse(body.timestamp))).toBe(false);
     expect(response.headers.get("Cache-Control")).toBe("no-store, max-age=0");
     expect(body.error).toBeUndefined();
-    expect(supabase.from).toHaveBeenCalledWith("chat_messages");
-    expect(supabase.select).toHaveBeenCalledWith("id", { head: true });
-    expect(supabase.limit).toHaveBeenCalledWith(1);
+    expect(supabase.rpc).toHaveBeenCalledWith("app_health");
   });
 
   it("returns degraded when query fails", async () => {
     const supabase = createSupabaseStub({ message: "query failed" });
-    createSupabaseServerClientMock.mockResolvedValueOnce(supabase.client as never);
+    createSupabaseServerClientMock.mockReturnValueOnce(supabase.client as never);
 
     const response = await GET();
     const body = await response.json();
@@ -77,10 +71,8 @@ describe("GET /api/health", () => {
   });
 
   it("returns degraded when query execution throws", async () => {
-    const limit = vi.fn().mockRejectedValueOnce(new Error("boom"));
-    const select = vi.fn().mockReturnValue({ limit });
-    const from = vi.fn().mockReturnValue({ select });
-    createSupabaseServerClientMock.mockResolvedValueOnce({ from } as never);
+    const rpc = vi.fn().mockRejectedValueOnce(new Error("boom"));
+    createSupabaseServerClientMock.mockReturnValueOnce({ rpc } as never);
 
     const response = await GET();
     const body = await response.json();

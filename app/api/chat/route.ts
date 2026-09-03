@@ -6,7 +6,7 @@ import { trimMessages, trimMessagesByChars } from "@/lib/context";
 import { maybeSummarize } from "@/lib/summary";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { logLlmRequest, logLlmResponse } from "@/lib/llm-logging";
-import { createSupabaseServerClient } from "@/utils/supabase/server";
+import { assertSameOrigin, getSessionUser } from "@/lib/auth";
 import type { ChatMessage, PromptContext } from "@/lib/types";
 
 type ChatRequest = PromptContext & {
@@ -15,16 +15,13 @@ type ChatRequest = PromptContext & {
 
 export async function POST(req: Request) {
   try {
-    const supabase = await createSupabaseServerClient();
-    const { data, error } = await supabase.auth.getUser();
-    if (error) {
-      console.warn("Failed to read Supabase user", error);
-    }
-    if (!data.user) {
+    if (!assertSameOrigin(req)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    const user = await getSessionUser();
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const rateLimit = checkRateLimit(data.user.id, 20, 60_000);
+    const rateLimit = checkRateLimit(user.id, 20, 60_000);
     if (!rateLimit.ok) {
       return NextResponse.json(
         { error: "Too many requests" },

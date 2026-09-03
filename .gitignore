@@ -3,6 +3,7 @@ node_modules/
 out/
 dist/
 .env*
+!.env.sample
 .DS_Store
 *.log
 npm-debug.log*

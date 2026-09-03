@@ -6,8 +6,8 @@ import { maybeSummarize } from "@/lib/summary";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { buildReviewSystemPrompt } from "@/lib/prompts";
 import { logLlmRequest, logLlmResponse } from "@/lib/llm-logging";
+import { assertSameOrigin, getSessionUser } from "@/lib/auth";
 import { createSupabaseServerClient } from "@/utils/supabase/server";
-import { fetchMessages } from "@/lib/supabase/messages";
 import type { ChatMessage, PromptContext, ReviewResult } from "@/lib/types";
 
 type ReviewRequest = PromptContext & {
@@ -81,16 +81,13 @@ function trimReview(
 
 export async function POST(req: Request) {
   try {
-    const supabase = await createSupabaseServerClient();
-    const { data, error } = await supabase.auth.getUser();
-    if (error) {
-      console.warn("Failed to read Supabase user", error);
-    }
-    if (!data.user) {
+    if (!assertSameOrigin(req)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    const user = await getSessionUser();
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const rateLimit = checkRateLimit(data.user.id, 20, 60_000);
+    const rateLimit = checkRateLimit(user.id, 20, 60_000);
     if (!rateLimit.ok) {
       return NextResponse.json(
         { error: "Too many requests" },
@@ -129,9 +126,9 @@ export async function POST(req: Request) {
       MAX_MESSAGE_LIMIT
     );
 
-    const messages = await fetchMessages(supabase, data.user.id, {
-      limit: messageLimit,
-    });
+    const { data: persisted, error: stateError } = await createSupabaseServerClient().rpc("app_state", { p_user_id: user.id, p_action: "load" });
+    if (stateError) throw stateError;
+    const messages = [...(persisted?.messages ?? [])].slice(0, messageLimit).reverse() as ChatMessage[];
     if (!messages.length) {
       return NextResponse.json(
         { error: "Missing chat messages" },

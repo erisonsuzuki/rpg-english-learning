@@ -12,7 +12,8 @@ export type BrowserRuntime = typeof globalThis & {
     listener: EventListenerOrEventListenerObject
   ) => void;
   dispatchEvent?: (event: Event) => void;
-  location?: { origin?: string; reload?: () => void };
+  location?: { origin?: string; reload?: () => void; assign?: (url: string) => void; hash?: string; pathname?: string; search?: string };
+  history?: { replaceState?: (data: unknown, unused: string, url?: string | URL | null) => void };
   document?: {
     visibilityState?: DocumentVisibilityState;
     documentElement?: { dataset?: { theme?: string } };

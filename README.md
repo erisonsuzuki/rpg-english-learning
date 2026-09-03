@@ -10,7 +10,7 @@ An installable RPG storytelling app that helps Portuguese-speaking users practic
 - App UI language toggle (Portuguese/English)
 - Dark mode toggle with persistent theme preference
 - Supabase-backed persistence of character and chat history
-- Magic-link authentication via email
+- Passwordless email links with private application sessions
 - Chat starters when history is empty
 - Markdown rendering for chat responses
 - PWA installable shell with service worker caching
@@ -38,9 +38,14 @@ GROQ_MODEL_CHARACTER=openai/gpt-oss-120b
 GROQ_MODEL_REVIEW=openai/gpt-oss-120b
 GROQ_MODEL_SUMMARY=openai/gpt-oss-120b
 GROQ_MODEL_FALLBACK=llama-3.3-70b-versatile
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_supabase_publishable_key
+SUPABASE_URL=your_supabase_url
+SUPABASE_SERVICE_ROLE_KEY=your_server_only_service_role_key
 NEXT_PUBLIC_SITE_URL=https://your-app-url.io
+SMTP_SERVER=your_smtp_host
+SMTP_PORT=587
+SMTP_LOGIN=your_smtp_login
+SMTP_KEY=your_smtp_password
+SMTP_FROM_EMAIL=no-reply@your-app-url.io
 ```
 
 Optional overrides:
