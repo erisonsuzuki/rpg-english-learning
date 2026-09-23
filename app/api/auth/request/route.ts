@@ -29,10 +29,15 @@ export async function POST(request: Request) {
         p_ip_limit: Math.max(1, Number(process.env.MAGIC_LINK_IP_RATE_LIMIT ?? 20)),
         p_ip_window_seconds: Math.max(1, Number(process.env.MAGIC_LINK_IP_RATE_WINDOW_SECONDS ?? 3600)),
       });
+      if (error) {
+        console.error("Magic link token creation failed", error.message);
+      }
       if (!error && data?.[0]?.accepted) {
         const origin = new URL(request.url).origin;
         const link = `${origin}/auth/callback#token=${encodeURIComponent(token)}&nonce=${encodeURIComponent(nonce)}`;
         await sendMagicLink(normalizedEmail, link);
+      } else if (!error) {
+        console.info("Magic link request throttled", { normalizedEmail });
       }
     }
   } catch (error) {
